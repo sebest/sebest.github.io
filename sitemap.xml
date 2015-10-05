@@ -3,8 +3,13 @@
   
   <url>
     <loc>https://sebest.github.io/</loc>
-    <lastmod>2015-10-03T00:53:54-07:00</lastmod>
+    <lastmod>2015-10-05T10:48:50-07:00</lastmod>
     <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://sebest.github.io/post/protips-converting-markdown-to-restructuredtext/</loc>
+    <lastmod>2015-10-05T10:48:50-07:00</lastmod>
   </url>
   
   <url>

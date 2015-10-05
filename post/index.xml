@@ -6,8 +6,21 @@
     <description>Recent content in Posts on ☁️  Sebest&#39;s Nuage ☁️</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 03 Oct 2015 00:53:54 -0700</lastBuildDate>
+    <lastBuildDate>Mon, 05 Oct 2015 10:48:50 -0700</lastBuildDate>
     <atom:link href="https://sebest.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>ProTips: converting markdown to restructuredtext</title>
+      <link>https://sebest.github.io/post/protips-converting-markdown-to-restructuredtext/</link>
+      <pubDate>Mon, 05 Oct 2015 10:48:50 -0700</pubDate>
+      
+      <guid>https://sebest.github.io/post/protips-converting-markdown-to-restructuredtext/</guid>
+      <description>&lt;p&gt;A quick one-liner, which I recently used to convert a Markdown formatted README to reStructuredText, suitable for posting to PyPI:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;pandoc --from=markdown --to=rst --output=README.rst README.md
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
     
     <item>
       <title>ProTips: dealing with unix timestamp from the shell</title>
