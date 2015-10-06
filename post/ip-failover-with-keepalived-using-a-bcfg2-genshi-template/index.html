@@ -1,0 +1,248 @@
+
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+
+  
+  <meta charset="UTF-8">
+  <title>
+    Ip failover with keepalived using a Bcfg2/Genshi template | ☁️  Sebest&#39;s Nuage ☁️
+  </title>
+
+
+  
+  <meta name="viewport" content="width=device-width,user-scalable=no,maximum-scale=1,initial-scale=1">
+
+  
+  <link rel="canonical" href="https://sebest.github.io/post/ip-failover-with-keepalived-using-a-bcfg2-genshi-template/"/>
+
+  
+  <link rel="stylesheet" href="/css/sanitize.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/highlight_monokai.css">
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="stylesheet" href="/css/custom.css">
+  
+  
+  <link href="https://sebest.github.io/index.xml" rel="alternate" type="application/rss+xml" title="☁️  Sebest&#39;s Nuage ☁️" />
+  <link href="https://sebest.github.io/index.xml" rel="feed" type="application/rss+xml" title="☁️  Sebest&#39;s Nuage ☁️" />
+
+  
+  <script type="text/javascript">var switchTo5x=true;</script>
+  <script type="text/javascript" src="https://ws.sharethis.com/button/buttons.js"></script>
+  <script type="text/javascript">stLight.options({publisher: "2b9fffc6-b3fe-4988-a0ef-4f9dcce98eaa", doNotHash: true, doNotCopy: true, hashAddressBar: false});</script>
+
+
+</head>
+
+
+
+<body>
+<div class="container">
+
+  
+  <header role="banner">
+    <div class="row gutters">
+      <div id="site-title" class="col span_6">
+        <h1><a href="https://sebest.github.io/">☁️  Sebest&#39;s Nuage ☁️</a></h1>
+        <h2>The DevOps corner.</h2>
+      </div>
+      <div id="social" class="col span_6">
+        <ul>
+          <li><a href="https://twitter.com/sebest" target="_blank">Twitter</a></li>
+          <li><a href="https://facebook.com/tsebes" target="_blank">Facebook</a></li>
+          <li><a href="https://github.com/sebest" target="_blank">GitHub</a></li>
+          
+        </ul>
+      </div>
+    </div>
+  </header>
+
+
+  
+  <main id="single" role="main">
+    <div class="article-header">
+      <h1>Ip failover with keepalived using a Bcfg2/Genshi template</h1>
+      <div class="meta">
+        Mar 30, 2010 &nbsp;
+        
+      </div>
+    </div>
+    <article>
+      <p>Following my previous post about <a href="http://www.pytips.com/2010/3/16/ip-failover-with-ucarp-on-ubuntu">Ip failover with Ucarp</a>, i decided to use Keepalived instead of Ucarp as it is easier to setup and integrate.
+Keepalived implemented the <a href="http://en.wikipedia.org/wiki/Virtual_Router_Redundancy_Protocol">Vrrp</a> protocol instead of the <a href="http://en.wikipedia.org/wiki/Common_Address_Redundancy_Protocol">Carp</a> protocol. Carp is a patent free implementation of the ideas behind Vrrp.</p>
+
+<p>To generate the keepalived config file i used <a href="http://www.pytips.com/2010/3/19/using-genshi-templating-with-bcfg2">TGenshi</a> template and the bcfg2 <a href="http://trac.mcs.anl.gov/projects/bcfg2/wiki/Plugins/Properties">Properties</a> plugin.</p>
+
+<p>This plugin allows you to define your custom XML config file and then use its content in your template.</p>
+
+<p>Here is my <b>/etc/bcfg2/Properties/vips.xml</b></p>
+
+<pre><code>&lt;vips&gt;
+  &lt;group name=&quot;axel&quot;&gt;
+    &lt;vip iface=&quot;eth0&quot; vid=&quot;10&quot; ip=&quot;10.201.4.101&quot; netmask=&quot;16&quot; broadcast=&quot;10.201.255.255&quot; password=&quot;mypass1&quot;&gt;
+      &lt;host name=&quot;axel-01&quot; master=&quot;yes&quot;/&gt;
+      &lt;host name=&quot;axel-02&quot; master=&quot;no&quot;/&gt;
+    &lt;/vip&gt;
+    &lt;vip iface=&quot;vlan501&quot; vid=&quot;11&quot; ip=&quot;42.42.121.111&quot; netmask&quot;26&quot; broadcast=&quot;42.42.121.127&quot; password=&quot;mypass2&quot;&gt;
+      &lt;host name=&quot;axel-01&quot; master=&quot;yes&quot;/&gt;
+      &lt;host name=&quot;axel-02&quot; master=&quot;no&quot;/&gt;
+    &lt;/vip&gt;
+    &lt;vip iface=&quot;vlan501&quot; vid=&quot;12&quot; ip=&quot;42.42.121.112&quot; netmask=&quot;26&quot; broadcast=&quot;42.42.121.127&quot; password=&quot;mypass3&quot;&gt;
+      &lt;host name=&quot;axel-01&quot; master=&quot;no&quot;/&gt;
+      &lt;host name=&quot;axel-02&quot; master=&quot;yes&quot;/&gt;
+    &lt;/vip&gt;
+  &lt;/group&gt;
+&lt;/vips&gt;
+</code></pre>
+
+<p>Now the template <b>/etc/bcfg2/TGenshi/keepalived/keepalived.conf/template.newtxt</b></p>
+
+<pre><code>{% python
+vips = []
+
+try:
+    hostname = list(metadata.aliases)[0].split('.',1)[0]
+    for vip_info in metadata.Properties['vips.xml'].data.find(&quot;.//group[@name='%s']&quot; % (hostname.split('-')[0])):
+        vip = vip_info.attrib
+        print vip
+        for host_info in vip_info:
+            if host_info.attrib['name'] == hostname:
+               vip.update({'state' : host_info.attrib['master'] == 'yes' and 'MASTER' or 'BACKUP' })
+               vips.append(vip)
+except:
+    pass
+%}\
+# ${hostname}
+
+{% for index, vip in enumerate(vips) %}\
+vrrp_instance VI_${index} {
+    state ${vip['state']}
+    interface ${vip['iface']}
+    virtual_router_id ${vip['vid']}
+    priority 100
+    authentication {
+        auth_type PASS
+        auth_pass ${vip['password']}
+    }
+
+    virtual_ipaddress {
+        ${vip['ip']}/${vip['netmask']} brd ${vip['broadcast']} dev ${vip['iface']}
+    }
+}
+{% end %}
+</code></pre>
+
+<p>This will generate this kind of config file:</p>
+
+<pre><code># axel-01
+
+vrrp_instance VI_0 {
+    state MASTER
+    interface eth0
+    virtual_router_id 10
+    priority 100
+    authentication {
+        auth_type PASS
+        auth_pass mypass1
+    }
+
+    virtual_ipaddress {
+        10.201.4.101/16 brd 10.201.255.255 dev eth0
+    }
+}
+vrrp_instance VI_1 {
+    state MASTER
+    interface vlan501
+    virtual_router_id 11
+    priority 100
+    authentication {
+        auth_type PASS
+        auth_pass mypass2
+    }
+
+    virtual_ipaddress {
+        42.42.121.111/26 brd 42.42.121.127 dev vlan501
+    }
+}
+vrrp_instance VI_2 {
+    state BACKUP
+    interface vlan501
+    virtual_router_id 12
+    priority 100
+    authentication {
+        auth_type PASS
+        auth_pass mypass3
+    }
+
+    virtual_ipaddress {
+        42.42.121.112/26 brd 42.42.121.127 dev vlan501
+    }
+}
+</code></pre>
+
+      
+      
+      <div id="share-this" class="col span_10">
+        <span class='st_twitter_large' displayText='Tweet'></span>
+        <span class='st_facebook_large' displayText='Facebook'></span>
+        <span class='st_googleplus_large' displayText='Google +'></span>
+        <span class='st_pocket_large' displayText='Pocket'></span>
+        <span class='st_sharethis_large' displayText='ShareThis'></span>
+        <span class='st_email_large' displayText='Email'></span>  
+      </div>
+    </article>
+    
+
+
+<script type="text/javascript">
+     
+    var disqus_shortname = '';
+
+     
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+  </main>
+  
+  <nav class="pagination">
+    
+      <span class="previous">&larr; <a href="https://sebest.github.io/post/automatic-installation-of-ubuntu-karmic/" rel="prev">Automatic Installation of Ubuntu Karmic</a></span>
+    
+    
+      <span class="next"><a href="https://sebest.github.io/post/setting-the-root-password-in-preseed-cfg-for-unattended-installation/" rel="next">Setting the root password in preseed.cfg for unattended installation</a> &rarr;</span>
+    
+  </nav>
+
+
+  
+  <footer role="contentinfo">
+    <div style="text-align:center;">
+      
+      Written by Sébastien Estienne
+    </div>
+  </footer>
+
+
+</div>
+
+<script src="/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script>
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-68482802-1', 'auto');
+	ga('send', 'pageview');
+</script>
+
+</body>
+</html>
+

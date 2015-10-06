@@ -18,6 +18,41 @@
   </url>
   
   <url>
+    <loc>https://sebest.github.io/post/a-quick-md5sum-equivalent-in-python/</loc>
+    <lastmod>2010-05-29T00:18:38-07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://sebest.github.io/post/linux-how-to-bind-ip-that-doesn-t-exist-yet/</loc>
+    <lastmod>2010-05-25T00:00:00-07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://sebest.github.io/post/how-to-easily-packags-python-softwares-for-ubuntu/</loc>
+    <lastmod>2010-05-24T00:00:00-07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://sebest.github.io/post/simple-http-server-using-python/</loc>
+    <lastmod>2010-05-01T00:00:00-07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://sebest.github.io/post/setting-the-root-password-in-preseed-cfg-for-unattended-installation/</loc>
+    <lastmod>2010-03-31T00:06:13-07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://sebest.github.io/post/ip-failover-with-keepalived-using-a-bcfg2-genshi-template/</loc>
+    <lastmod>2010-03-30T00:00:00-07:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://sebest.github.io/post/automatic-installation-of-ubuntu-karmic/</loc>
+    <lastmod>2010-03-29T00:16:33-07:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://sebest.github.io/post/ip-failover-with-ucarp-on-ubuntu/</loc>
     <lastmod>2010-03-16T00:09:33-07:00</lastmod>
   </url>

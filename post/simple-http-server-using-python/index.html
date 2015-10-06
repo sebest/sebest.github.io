@@ -6,7 +6,7 @@
   
   <meta charset="UTF-8">
   <title>
-    ProTips: dealing with unix timestamp from the shell | ☁️  Sebest&#39;s Nuage ☁️
+    Simple Http server using python | ☁️  Sebest&#39;s Nuage ☁️
   </title>
 
 
@@ -14,7 +14,7 @@
   <meta name="viewport" content="width=device-width,user-scalable=no,maximum-scale=1,initial-scale=1">
 
   
-  <link rel="canonical" href="https://sebest.github.io/post/protips-dealing-with-unix-timestamp-from-the-shell/"/>
+  <link rel="canonical" href="https://sebest.github.io/post/simple-http-server-using-python/"/>
 
   
   <link rel="stylesheet" href="/css/sanitize.css">
@@ -62,61 +62,24 @@
   
   <main id="single" role="main">
     <div class="article-header">
-      <h1>ProTips: dealing with unix timestamp from the shell</h1>
+      <h1>Simple Http server using python</h1>
       <div class="meta">
-        Oct 3, 2015 &nbsp;
+        May 1, 2010 &nbsp;
         
       </div>
     </div>
     <article>
-      
+      <p>Here is a quick tips to easily serve static files.
+The only requirement is to have python 2.5+.</p>
 
-<h2 id="get-the-current-unix-timestamp:b07beac5cf000e882e3d2de8efb60ff8">Get the current UNIX timestamp</h2>
+<p>The first thing to do is to go in the directory you want to share, this is the directory that would be apache DocumentRoot.</p>
 
-<p>Eg: Tue Sep 22 23:34:33 UTC 2015</p>
+<p>Then issue the following command and you are done:</p>
 
-<pre><code>$ date +%s
-1442964873
+<pre><code>$ python -m SimpleHTTPServer
 </code></pre>
 
-<h2 id="get-the-unix-timestamp-of-a-specific-date:b07beac5cf000e882e3d2de8efb60ff8">Get the UNIX timestamp of a specific date.</h2>
-
-<p><strong>OSX</strong> use this pattern [[[mm]dd]HH]MM[[cc]yy][.ss]]</p>
-
-<pre><code>$ date -ju 092223342015.33 +%s
-1442964873
-</code></pre>
-
-<ul>
-<li><em>-j</em> : do not set the date</li>
-<li><em>-u</em> : input date is UTC</li>
-</ul>
-
-<p><strong>Linux</strong> use this pattern mm/dd/ccyy HH:MM:ss</p>
-
-<pre><code>$ date -d &quot;09/22/2015 23:34:33&quot; +%s
-1442964873
-</code></pre>
-
-<h2 id="convert-unix-timestamp-to-human-readable-format:b07beac5cf000e882e3d2de8efb60ff8">Convert Unix timestamp to Human readable format</h2>
-
-<p><strong>OSX</strong> for local timezone</p>
-
-<pre><code>$ date -r 1442964873
-Tue Sep 22 16:34:33 PDT 2015
-</code></pre>
-
-<p><strong>OSX</strong> in UTC</p>
-
-<pre><code>$ date -ur 1442964873
-Tue Sep 22 23:34:33 UTC 2015
-</code></pre>
-
-<p><strong>Linux</strong> in UTC</p>
-
-<pre><code>date -d @1442964873
-Tue Sep 22 23:34:33 UTC 2015
-</code></pre>
+<p>You can optionnaly give a port number after <b>SimpleHTTPServer</b>, the default port number is 8000</p>
 
       
       
@@ -149,10 +112,10 @@ Tue Sep 22 23:34:33 UTC 2015
   
   <nav class="pagination">
     
-      <span class="previous">&larr; <a href="https://sebest.github.io/post/a-quick-md5sum-equivalent-in-python/" rel="prev">A quick md5sum equivalent in python.</a></span>
+      <span class="previous">&larr; <a href="https://sebest.github.io/post/setting-the-root-password-in-preseed-cfg-for-unattended-installation/" rel="prev">Setting the root password in preseed.cfg for unattended installation</a></span>
     
     
-      <span class="next"><a href="https://sebest.github.io/post/protips-converting-markdown-to-restructuredtext/" rel="next">ProTips: converting markdown to restructuredtext</a> &rarr;</span>
+      <span class="next"><a href="https://sebest.github.io/post/how-to-easily-packags-python-softwares-for-ubuntu/" rel="next">How to easily package python softwares for ubuntu</a> &rarr;</span>
     
   </nav>
 

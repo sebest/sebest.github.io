@@ -6,7 +6,7 @@
   
   <meta charset="UTF-8">
   <title>
-    ProTips: dealing with unix timestamp from the shell | ☁️  Sebest&#39;s Nuage ☁️
+    A quick md5sum equivalent in python. | ☁️  Sebest&#39;s Nuage ☁️
   </title>
 
 
@@ -14,7 +14,7 @@
   <meta name="viewport" content="width=device-width,user-scalable=no,maximum-scale=1,initial-scale=1">
 
   
-  <link rel="canonical" href="https://sebest.github.io/post/protips-dealing-with-unix-timestamp-from-the-shell/"/>
+  <link rel="canonical" href="https://sebest.github.io/post/a-quick-md5sum-equivalent-in-python/"/>
 
   
   <link rel="stylesheet" href="/css/sanitize.css">
@@ -62,61 +62,58 @@
   
   <main id="single" role="main">
     <div class="article-header">
-      <h1>ProTips: dealing with unix timestamp from the shell</h1>
+      <h1>A quick md5sum equivalent in python.</h1>
       <div class="meta">
-        Oct 3, 2015 &nbsp;
+        May 29, 2010 &nbsp;
         
       </div>
     </div>
     <article>
-      
+      <p>This post will show you how to write a function to compute md5 sum of a file using the <b>hashlib module</b>, the <b>with statement</b> and being memory efficient by not reading the whole file in memory.</p>
 
-<h2 id="get-the-current-unix-timestamp:b07beac5cf000e882e3d2de8efb60ff8">Get the current UNIX timestamp</h2>
+<pre><code>from __future__ import with_statement
+from hashlib import md5
 
-<p>Eg: Tue Sep 22 23:34:33 UTC 2015</p>
+def md5sum(filename, buf_size=8192):
+    m = md5()
+    # the with statement makes sure the file will be closed
+    with open(filename, 'b') as f:
+        # We read the file in small chunk until EOF
+        data = f.read(buf_size)
+        while data:
+            # We had data to the md5 hash
+            m.update(data)
+            data = f.read(buf_size)
+    # We return the md5 hash in hexadecimal format
+    return m.hexdigest()
 
-<pre><code>$ date +%s
-1442964873
+if __name__ == '__main__':
+    import sys
+    print md5sum(sys.argv[1])
 </code></pre>
 
-<h2 id="get-the-unix-timestamp-of-a-specific-date:b07beac5cf000e882e3d2de8efb60ff8">Get the UNIX timestamp of a specific date.</h2>
+<p>Now let&rsquo;s see how quick it is against the real md5sum using a test file of 10Go!<br/>
+The real md5sum:</p>
 
-<p><strong>OSX</strong> use this pattern [[[mm]dd]HH]MM[[cc]yy][.ss]]</p>
+<pre><code># time md5sum /data/testfile
+b215f7bf5b09fa3e9848a6a66f3f3172  /data/testfile
 
-<pre><code>$ date -ju 092223342015.33 +%s
-1442964873
+real    0m31.148s
+user    0m27.738s
+sys     0m3.408s
 </code></pre>
 
-<ul>
-<li><em>-j</em> : do not set the date</li>
-<li><em>-u</em> : input date is UTC</li>
-</ul>
+<p>The python version of md5sum:</p>
 
-<p><strong>Linux</strong> use this pattern mm/dd/ccyy HH:MM:ss</p>
+<pre><code># time python md5sum.py /data/testfile
+b215f7bf5b09fa3e9848a6a66f3f3172
 
-<pre><code>$ date -d &quot;09/22/2015 23:34:33&quot; +%s
-1442964873
+real    0m27.791s
+user    0m24.514s
+sys     0m3.276s
 </code></pre>
 
-<h2 id="convert-unix-timestamp-to-human-readable-format:b07beac5cf000e882e3d2de8efb60ff8">Convert Unix timestamp to Human readable format</h2>
-
-<p><strong>OSX</strong> for local timezone</p>
-
-<pre><code>$ date -r 1442964873
-Tue Sep 22 16:34:33 PDT 2015
-</code></pre>
-
-<p><strong>OSX</strong> in UTC</p>
-
-<pre><code>$ date -ur 1442964873
-Tue Sep 22 23:34:33 UTC 2015
-</code></pre>
-
-<p><strong>Linux</strong> in UTC</p>
-
-<pre><code>date -d @1442964873
-Tue Sep 22 23:34:33 UTC 2015
-</code></pre>
+<p>The python based version is almost 4 seconds quicker than the C based version!</p>
 
       
       
@@ -149,10 +146,10 @@ Tue Sep 22 23:34:33 UTC 2015
   
   <nav class="pagination">
     
-      <span class="previous">&larr; <a href="https://sebest.github.io/post/a-quick-md5sum-equivalent-in-python/" rel="prev">A quick md5sum equivalent in python.</a></span>
+      <span class="previous">&larr; <a href="https://sebest.github.io/post/linux-how-to-bind-ip-that-doesn-t-exist-yet/" rel="prev">Linux: How to bind IP that doesn&#39;t exist (yet).</a></span>
     
     
-      <span class="next"><a href="https://sebest.github.io/post/protips-converting-markdown-to-restructuredtext/" rel="next">ProTips: converting markdown to restructuredtext</a> &rarr;</span>
+      <span class="next"><a href="https://sebest.github.io/post/protips-dealing-with-unix-timestamp-from-the-shell/" rel="next">ProTips: dealing with unix timestamp from the shell</a> &rarr;</span>
     
   </nav>
 
