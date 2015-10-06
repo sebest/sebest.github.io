@@ -79,5 +79,64 @@ Tue Sep 22 23:34:33 UTC 2015
 </description>
     </item>
     
+    <item>
+      <title>IP failover with Ucarp on Ubuntu</title>
+      <link>https://sebest.github.io/post/ip-failover-with-ucarp-on-ubuntu/</link>
+      <pubDate>Tue, 16 Mar 2010 00:09:33 -0700</pubDate>
+      
+      <guid>https://sebest.github.io/post/ip-failover-with-ucarp-on-ubuntu/</guid>
+      <description>&lt;p&gt;Ucarp is an implementation of Common Address Redundancy Protocol (CARP) allowing failover of a single Virtual IP (VIP) for high availability.&lt;/p&gt;
+
+&lt;p&gt;In order to install ucarp:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;apt-get install ucarp
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;You can find more about ubuntu&amp;rsquo;s integration of ucarp in &lt;strong&gt;/usr/share/doc/ucarp/README.Debian&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;We&amp;rsquo;ll now modify &lt;strong&gt;/etc/network/interfaces&lt;/strong&gt; to add our virtual IP: 10.200.0.200:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;# /etc/network/interfaces
+auto eth0
+iface eth0 inet static
+        address 10.200.0.102
+        netmask 255.255.255.0
+        ucarp-vid 3
+        ucarp-vip 10.200.0.200
+        ucarp-password ourpassword
+        ucarp-advskew 10
+        ucarp-advbase 1
+        ucarp-master yes
+
+iface eth0:ucarp inet static
+      address 10.200.0.200
+      netmask 255.255.255.255
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;You can now restart your network:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;/etc/init.d/networking restart
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;And you can check that your virtual IP is there:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;# ip a show dev eth0
+2: eth0: &amp;lt;BROADCAST,MULTICAST,UP,LOWER_UP&amp;gt; mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 00:26:b9:f9:48:d0 brd ff:ff:ff:ff:ff:ff
+    inet 10.200.0.102/24 brd 10.200.0.255 scope global eth0
+    inet 10.200.0.200/32 brd 10.255.255.255 scope global eth0:ucarp
+       valid_lft forever preferred_lft forever
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;On your second server you can do the exact same steps, except that you can set &lt;strong&gt;ucarp-master&lt;/strong&gt; to &lt;strong&gt;no&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;After you have restart the network on the second server the virtual IP won&amp;rsquo;t be there, you can try rebooting the first server and check that the virtual IP appears on the second server.&lt;/p&gt;
+
+&lt;p&gt;In the mean time you can ping the virtual IP to check that the failover works properly.&lt;/p&gt;
+
+&lt;p&gt;When the first server will be up again, the virtual IP will go back to this server as it is the master.&lt;/p&gt;
+</description>
+    </item>
+    
   </channel>
 </rss>

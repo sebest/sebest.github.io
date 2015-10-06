@@ -6,7 +6,7 @@
   
   <meta charset="UTF-8">
   <title>
-    ProTips: dealing with unix timestamp from the shell | ☁️  Sebest&#39;s Nuage ☁️
+    IP failover with Ucarp on Ubuntu | ☁️  Sebest&#39;s Nuage ☁️
   </title>
 
 
@@ -14,7 +14,7 @@
   <meta name="viewport" content="width=device-width,user-scalable=no,maximum-scale=1,initial-scale=1">
 
   
-  <link rel="canonical" href="https://sebest.github.io/post/protips-dealing-with-unix-timestamp-from-the-shell/"/>
+  <link rel="canonical" href="https://sebest.github.io/post/ip-failover-with-ucarp-on-ubuntu/"/>
 
   
   <link rel="stylesheet" href="/css/sanitize.css">
@@ -62,61 +62,63 @@
   
   <main id="single" role="main">
     <div class="article-header">
-      <h1>ProTips: dealing with unix timestamp from the shell</h1>
+      <h1>IP failover with Ucarp on Ubuntu</h1>
       <div class="meta">
-        Oct 3, 2015 &nbsp;
+        Mar 16, 2010 &nbsp;
         
       </div>
     </div>
     <article>
-      
+      <p>Ucarp is an implementation of Common Address Redundancy Protocol (CARP) allowing failover of a single Virtual IP (VIP) for high availability.</p>
 
-<h2 id="get-the-current-unix-timestamp:b07beac5cf000e882e3d2de8efb60ff8">Get the current UNIX timestamp</h2>
+<p>In order to install ucarp:</p>
 
-<p>Eg: Tue Sep 22 23:34:33 UTC 2015</p>
-
-<pre><code>$ date +%s
-1442964873
+<pre><code>apt-get install ucarp
 </code></pre>
 
-<h2 id="get-the-unix-timestamp-of-a-specific-date:b07beac5cf000e882e3d2de8efb60ff8">Get the UNIX timestamp of a specific date.</h2>
+<p>You can find more about ubuntu&rsquo;s integration of ucarp in <strong>/usr/share/doc/ucarp/README.Debian</strong>.</p>
 
-<p><strong>OSX</strong> use this pattern [[[mm]dd]HH]MM[[cc]yy][.ss]]</p>
+<p>We&rsquo;ll now modify <strong>/etc/network/interfaces</strong> to add our virtual IP: 10.200.0.200:</p>
 
-<pre><code>$ date -ju 092223342015.33 +%s
-1442964873
+<pre><code># /etc/network/interfaces
+auto eth0
+iface eth0 inet static
+        address 10.200.0.102
+        netmask 255.255.255.0
+        ucarp-vid 3
+        ucarp-vip 10.200.0.200
+        ucarp-password ourpassword
+        ucarp-advskew 10
+        ucarp-advbase 1
+        ucarp-master yes
+
+iface eth0:ucarp inet static
+      address 10.200.0.200
+      netmask 255.255.255.255
 </code></pre>
 
-<ul>
-<li><em>-j</em> : do not set the date</li>
-<li><em>-u</em> : input date is UTC</li>
-</ul>
+<p>You can now restart your network:</p>
 
-<p><strong>Linux</strong> use this pattern mm/dd/ccyy HH:MM:ss</p>
-
-<pre><code>$ date -d &quot;09/22/2015 23:34:33&quot; +%s
-1442964873
+<pre><code>/etc/init.d/networking restart
 </code></pre>
 
-<h2 id="convert-unix-timestamp-to-human-readable-format:b07beac5cf000e882e3d2de8efb60ff8">Convert Unix timestamp to Human readable format</h2>
+<p>And you can check that your virtual IP is there:</p>
 
-<p><strong>OSX</strong> for local timezone</p>
-
-<pre><code>$ date -r 1442964873
-Tue Sep 22 16:34:33 PDT 2015
+<pre><code># ip a show dev eth0
+2: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 00:26:b9:f9:48:d0 brd ff:ff:ff:ff:ff:ff
+    inet 10.200.0.102/24 brd 10.200.0.255 scope global eth0
+    inet 10.200.0.200/32 brd 10.255.255.255 scope global eth0:ucarp
+       valid_lft forever preferred_lft forever
 </code></pre>
 
-<p><strong>OSX</strong> in UTC</p>
+<p>On your second server you can do the exact same steps, except that you can set <strong>ucarp-master</strong> to <strong>no</strong>.</p>
 
-<pre><code>$ date -ur 1442964873
-Tue Sep 22 23:34:33 UTC 2015
-</code></pre>
+<p>After you have restart the network on the second server the virtual IP won&rsquo;t be there, you can try rebooting the first server and check that the virtual IP appears on the second server.</p>
 
-<p><strong>Linux</strong> in UTC</p>
+<p>In the mean time you can ping the virtual IP to check that the failover works properly.</p>
 
-<pre><code>date -d @1442964873
-Tue Sep 22 23:34:33 UTC 2015
-</code></pre>
+<p>When the first server will be up again, the virtual IP will go back to this server as it is the master.</p>
 
       
       
@@ -149,10 +151,8 @@ Tue Sep 22 23:34:33 UTC 2015
   
   <nav class="pagination">
     
-      <span class="previous">&larr; <a href="https://sebest.github.io/post/ip-failover-with-ucarp-on-ubuntu/" rel="prev">IP failover with Ucarp on Ubuntu</a></span>
     
-    
-      <span class="next"><a href="https://sebest.github.io/post/protips-converting-markdown-to-restructuredtext/" rel="next">ProTips: converting markdown to restructuredtext</a> &rarr;</span>
+      <span class="next"><a href="https://sebest.github.io/post/protips-dealing-with-unix-timestamp-from-the-shell/" rel="next">ProTips: dealing with unix timestamp from the shell</a> &rarr;</span>
     
   </nav>
 
