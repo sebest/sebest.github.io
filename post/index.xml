@@ -6,8 +6,168 @@
     <description>Recent content in Posts on ☁️  Sebest&#39;s Nuage ☁️</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 05 Oct 2015 10:48:50 -0700</lastBuildDate>
+    <lastBuildDate>Wed, 07 Oct 2015 12:16:42 -0700</lastBuildDate>
     <atom:link href="https://sebest.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Create a small Docker image for a GoLang binary</title>
+      <link>https://sebest.github.io/post/create-a-small-docker-image-for-a-golang-binary/</link>
+      <pubDate>Wed, 07 Oct 2015 12:16:42 -0700</pubDate>
+      
+      <guid>https://sebest.github.io/post/create-a-small-docker-image-for-a-golang-binary/</guid>
+      <description>&lt;p&gt;One of the really nice thing with GoLang is that it is really easy to deploy in production as you don&amp;rsquo;t have to deploy any dependency, the problem with the official Docker images for GoLang is that they are really huge (more than 500MB).&lt;/p&gt;
+
+&lt;p&gt;Let&amp;rsquo;s start with a basic Go program:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;package main
+
+import (
+        &amp;quot;fmt&amp;quot;
+        &amp;quot;net/http&amp;quot;
+        &amp;quot;time&amp;quot;
+)
+
+func main() {
+        now := time.Now()
+        tz, _ := time.LoadLocation(&amp;quot;Europe/Paris&amp;quot;)
+        parisTime := now.In(tz)
+        fmt.Printf(&amp;quot;Local time: %s\nParis time: %s\n&amp;quot;, now, parisTime)
+
+        _, err := http.Get(&amp;quot;https://golang.org/&amp;quot;)
+        if err == nil {
+                fmt.Println(&amp;quot;GoLang website is UP&amp;quot;)
+        } else {
+                fmt.Printf(&amp;quot;GoLang website is DOWN\nErr: %s\n&amp;quot;, err.Error())
+        }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Please note that i&amp;rsquo;m using OsX.&lt;/p&gt;
+
+&lt;p&gt;Let&amp;rsquo;s compile our binary and check its size.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ go build main.go
+$ ls -lh main
+-rwxr-xr-x  1 sebest  staff   6,3M  7 oct 13:38 main
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The binary is 6.3 MB, now let create a Docker image, using the following Dockerfile:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;FROM scratch
+ADD main /
+CMD [&amp;quot;/main&amp;quot;]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;$ docker build -t demo .
+Sending build context to Docker daemon  6.57 MB
+Step 0 : FROM scratch
+ ---&amp;gt;
+Step 1 : ADD main /
+ ---&amp;gt; 52f8caa90021
+Removing intermediate container f4b041cde0f6
+Step 2 : CMD /main
+ ---&amp;gt; Running in b82368bb2f0a
+ ---&amp;gt; c625c39ac16e
+Removing intermediate container b82368bb2f0a
+Successfully built c625c39ac16e
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Now let&amp;rsquo;s try to run this image:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ docker run demo
+exec format error
+Error response from daemon: Cannot start container cda57701734998a80a1637e59db64e0737b4cc17d29041f9318b89a29d1af7f3: [8] System error: exec format error
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;We got an error: [8] System error: exec format error&lt;/p&gt;
+
+&lt;p&gt;The reason is that this binary is an OsX binary and not a Linux binary:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ file main
+main: Mach-O 64-bit executable x86_64
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;So let&amp;rsquo;s cross-compile our Go program to a Linux binary.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build main.go
+$ file main
+main: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, not stripped
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;We now have a Linux binary, so let&amp;rsquo;s rebuild our Docker image and run it:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ docker run demo
+panic: time: missing Location in call to Time.In
+
+goroutine 1 [running]:
+time.Time.In(0xecda77bef, 0x3d1be4, 0x8732e0, 0x0, 0x0, 0x0, 0x0)
+	/usr/local/Cellar/go/1.5.1/libexec/src/time/time.go:803 +0x85
+main.main()
+	/Users/sebest/work/blog-demo/demo-build-static-golang-binary-and-docker-image/main.go:12 +0x97
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;We now have a different error, the reason is that the scratch image does not have any zoneinfo for timezones, let&amp;rsquo;s copy the zoneinfo folder from OsX.&lt;/p&gt;
+
+&lt;p&gt;As the scratch image does not contain anything we don&amp;rsquo;t even have access to mkdir, the workaround is to create a tar.gz image and use the ADD directive in the Dockerfile.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ tar cfz zoneinfo.tar.gz /usr/share/zoneinfo
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;FROM scratch
+ADD zoneinfo.tar.gz /
+ADD main /
+CMD [&amp;quot;/main&amp;quot;]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Let&amp;rsquo;s rebuild and try our new Docker image&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ docker build -t demo .
+...
+$ docker run demo
+Local time: 2015-10-07 20:57:48.686910468 +0000 UTC
+Paris time: 2015-10-07 22:57:48.686910468 +0200 CEST
+GoLang website is DOWN
+Err: Get https://golang.org/: x509: failed to load system roots and no roots provided
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;So now the zoneinfo issue is fixed but we still have an error when doing a HTTPS request, the reason is that the scratch image does not have any SSL CA certificates.&lt;/p&gt;
+
+&lt;p&gt;Let&amp;rsquo;s download the Certificates from &lt;a href=&#34;http://curl.haxx.se/docs/caextract.html&#34;&gt;http://curl.haxx.se/docs/caextract.html&lt;/a&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;curl -o ca-certificates.crt https://raw.githubusercontent.com/bagder/ca-bundle/master/ca-bundle.crt
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Let&amp;rsquo;s fix that:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;FROM scratch
+ADD zoneinfo.tar.gz /
+ADD ca-certificates.crt /etc/ssl/certs/
+ADD main /
+CMD [&amp;quot;/main&amp;quot;]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Let&amp;rsquo;s try with this new Docker image&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ docker build -t demo .
+...
+$ docker run demo
+Local time: 2015-10-07 21:08:49.834033002 +0000 UTC
+Paris time: 2015-10-07 23:08:49.834033002 +0200 CEST
+GoLang website is UP
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Everything works fine now, let&amp;rsquo;s check the size of the Docker image&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ docker images
+REPOSITORY                TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
+demo                      latest              dfa7313cd338        3 minutes ago       7.075 MB
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;So our binary is 6.3MB and the Docker image is less than 7.1MB!&lt;/p&gt;
+
+&lt;p&gt;The source code for all of this is available &lt;a href=&#34;https://sebest.github.io/post/create-a-small-docker-image-for-a-golang-binary/&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>ProTips: converting markdown to restructuredtext</title>
