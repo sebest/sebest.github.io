@@ -165,7 +165,7 @@ demo                      latest              dfa7313cd338        3 minutes ago 
 
 &lt;p&gt;So our binary is 6.3MB and the Docker image is less than 7.1MB!&lt;/p&gt;
 
-&lt;p&gt;The source code for all of this is available &lt;a href=&#34;https://sebest.github.io/post/create-a-small-docker-image-for-a-golang-binary/&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;The source code for all of this is available &lt;a href=&#34;https://github.com/sebest/sebest-hugo-demo/tree/master/create-a-small-docker-image-for-a-golang-binary&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
 </description>
     </item>
     
