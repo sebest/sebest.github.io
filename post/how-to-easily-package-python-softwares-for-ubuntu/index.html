@@ -6,7 +6,7 @@
   
   <meta charset="UTF-8">
   <title>
-    Linux: How to bind IP that doesn&#39;t exist (yet). | ☁️  Sebest&#39;s Nuage ☁️
+    How to easily package python softwares for ubuntu | ☁️  Sebest&#39;s Nuage ☁️
   </title>
 
 
@@ -14,7 +14,7 @@
   <meta name="viewport" content="width=device-width,user-scalable=no,maximum-scale=1,initial-scale=1">
 
   
-  <link rel="canonical" href="https://sebest.github.io/post/linux-how-to-bind-ip-that-doesn-t-exist-yet/"/>
+  <link rel="canonical" href="https://sebest.github.io/post/how-to-easily-package-python-softwares-for-ubuntu/"/>
 
   
   <link rel="stylesheet" href="/css/sanitize.css">
@@ -62,27 +62,54 @@
   
   <main id="single" role="main">
     <div class="article-header">
-      <h1>Linux: How to bind IP that doesn&#39;t exist (yet).</h1>
+      <h1>How to easily package python softwares for ubuntu</h1>
       <div class="meta">
-        May 25, 2010 &nbsp;
+        May 24, 2010 &nbsp;
         
       </div>
     </div>
     <article>
-      <p>This tip is really usefull if you use virtual ips.</p>
+      <p>This post will show you how to quickly package any python software for debian or ubuntu.</p>
 
-<p>Imagine you are using keepalived + haproxy on your loadbalancers in active/active mode.</p>
+<p>The magic comes from <a href="http://github.com/astraw/stdeb">stdeb</a></p>
 
-<p>You have 2 vips one is on the first load balancerm the other on the second. Now in your haproxy.cfg you have to bind these ips, the probem is that one of the vips is not on the current loadbalancer, so haproxy will refuse to start with the following error: <i>Starting proxy appli1-rewrite: cannot bind socket</i>.</p>
+<p>The first step is to install it:</p>
 
-<p>The common solution is to listen on <i>0.0.0.0</i>, but it not always practical on wanted, especially if you want to have another server using the same port but on another ip, or if you only want to listen on internal interfaces.</p>
-
-<p>The solution is a sysctl, that will allow any software to bind any ip even if it&rsquo;s not up yet:</p>
-
-<pre><code>sysctl -w net.ipv4.ip_nonlocal_bind=1
+<pre><code>sudo apt-get install python-stdeb
 </code></pre>
 
-<p>You should put this in <strong>/etc/sysctl.conf</strong> to make it permanent.</p>
+<p>stdeb can download, package and install any python software hosted on <a href="http://pypi.python.org/pypi">PyPi</a> using the <b>pypi-install</b> command. It works almost like easy_install or pip.</p>
+
+<pre><code>pypi-install Werkzeug
+</code></pre>
+
+<p>You can check that the package is installed:</p>
+
+<pre><code>$ dpkg -l | grep werkzeug
+ii  python-werkzeug    0.6.2-1    The Swiss Army knife of Python web developme
+</code></pre>
+
+<p>If you want more control on the buildprocess and access the debian source package, you must follow theses steps:<br?>
+First you must find and download the archive of the software you want to package:</p>
+
+<pre><code># http://pypi.python.org/pypi/Jinja2/2.4.1
+wget http://pypi.python.org/packages/source/J/Jinja2/Jinja2-2.4.1.tar.gz
+</code></pre>
+
+<p>Now we will create the debian source package with <b>py2dsc</b></p>
+
+<pre><code>py2dsc Jinja2-2.4.1.tar.gz
+</code></pre>
+
+<p>The source package is in the <b>deb_dist</b> folder.
+If you want to build the binary package with debuild:</p>
+
+<pre><code>cd deb_dist/jinja2-2.4.1/
+debuild
+</code></pre>
+
+<p>You now have <b>python-jinja2_2.4.1-1_all.deb</b> in deb_dist!
+Happy packaging ;)</p>
 
       
       
@@ -115,10 +142,10 @@
   
   <nav class="pagination">
     
-      <span class="previous">&larr; <a href="https://sebest.github.io/post/how-to-easily-package-python-softwares-for-ubuntu/" rel="prev">How to easily package python softwares for ubuntu</a></span>
+      <span class="previous">&larr; <a href="https://sebest.github.io/post/simple-http-server-using-python/" rel="prev">Simple Http server using python</a></span>
     
     
-      <span class="next"><a href="https://sebest.github.io/post/a-quick-md5sum-equivalent-in-python/" rel="next">A quick md5sum equivalent in python.</a> &rarr;</span>
+      <span class="next"><a href="https://sebest.github.io/post/linux-how-to-bind-ip-that-doesn-t-exist-yet/" rel="next">Linux: How to bind IP that doesn&#39;t exist (yet).</a> &rarr;</span>
     
   </nav>
 

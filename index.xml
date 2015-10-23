@@ -318,10 +318,10 @@ sys     0m3.276s
     
     <item>
       <title>How to easily package python softwares for ubuntu</title>
-      <link>https://sebest.github.io/post/how-to-easily-packags-python-softwares-for-ubuntu/</link>
+      <link>https://sebest.github.io/post/how-to-easily-package-python-softwares-for-ubuntu/</link>
       <pubDate>Mon, 24 May 2010 00:00:00 -0700</pubDate>
       
-      <guid>https://sebest.github.io/post/how-to-easily-packags-python-softwares-for-ubuntu/</guid>
+      <guid>https://sebest.github.io/post/how-to-easily-package-python-softwares-for-ubuntu/</guid>
       <description>&lt;p&gt;This post will show you how to quickly package any python software for debian or ubuntu.&lt;/p&gt;
 
 &lt;p&gt;The magic comes from &lt;a href=&#34;http://github.com/astraw/stdeb&#34;&gt;stdeb&lt;/a&gt;&lt;/p&gt;
