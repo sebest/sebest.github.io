@@ -73,15 +73,15 @@
 
 <p><a href="https://github.com/grammarly/rocker">Rocker</a> is a tool developed by <a href="http://tech.grammarly.com/blog/posts/Making-Docker-Rock-at-Grammarly.html">Grammarly</a> that is offering additional functionalities to build Docker images.</p>
 
-<p>The syntax of the Rockerfiles are a superset of Dockerfiles.</p>
+<p>The syntax of the Rockerfiles is a superset of Dockerfiles.</p>
 
-<p>Rocker is really usefull to create minimal/small Docker images as you can split the process in 2 steps, one to build your project in a first container and one to actually ship and run.</p>
+<p>Rocker is useful for creating minimal/small Docker images as you can split the process in 2 steps, the first to build your project in a first container and the second to ship and run. In the following part of this post we will further explain and show how we can use Rocker to easily generate Docker images for Python projects.</p>
 
-<p>In the following part of this post we will see how we can use that to easily generate Docker images for Python projects, the first container will have all the tools to generate the <a href="http://pythonwheels.com/">Python wheels</a> like a C compiler and all the development headers and libraries, the final container will only contain the installed wheels and dynamic libraries.</p>
+<p>In the first container, we will install all the tools to generate the <a href="http://pythonwheels.com/">Python wheels</a> like a C compiler and all the development headers and libraries. The second container will only hold the installed wheels and dynamic libraries.</p>
 
 <h1 id="first-step-the-build-requirements:3973c3ec19897e2b10e699a49fe418cc">First step: The build requirements</h1>
 
-<p>If you are already familiar with Dockerfiles moving to Rockerfile is really straighforward, the first step is to create a file named <strong>Dockerfile</strong> at the root of your project.</p>
+<p>If you are already familiar with Dockerfiles, then moving to Rockerfile is really straightforward. The first step is to create a file named <strong>Dockerfile</strong> at the root of your project.</p>
 
 <p>You can see the full repository <a href="https://github.com/sebest/sebest-hugo-demo/tree/master/rocker-with-python-project">here</a>.</p>
 
@@ -106,9 +106,9 @@ WORKDIR /src
 RUN sed -ie s/\'0.0\'/\'{{ .Version }}\'/g setup.py
 </code></pre>
 
-<p>Rocker provides a templating functionality that we use, to see the version number of our package, this can be really usefull if you use a CI to set the version number using the build number.</p>
+<p>Rocker provides a templating functionality that we use to set the version number of our package. This can be really useful if you use a CI and want to use the build number as the version number.</p>
 
-<p>Here is an exempt of our setup.py</p>
+<p>Here is an excerpt of our setup.py</p>
 
 <pre><code>setup(
     name='rockerdemo',
@@ -122,7 +122,7 @@ RUN sed -ie s/\'0.0\'/\'{{ .Version }}\'/g setup.py
 <pre><code>$ rocker build -var Version=1.0
 </code></pre>
 
-<p>rocker provides the <strong>-print</strong> parameter to visualize the Rockerfile after it has been templated.</p>
+<p>Rocker provides the <strong>-print</strong> parameter to visualize the Rockerfile after it has been templated.</p>
 
 <pre><code>RUN python setup.py bdist_wheel
 RUN pip wheel .
@@ -135,6 +135,8 @@ RUN pip wheel setproctitle gunicorn json-logging-py
 </code></pre>
 
 <p>All the wheels are stored in <strong>/src/wheelhouse</strong>, so we <strong>EXPORT</strong> this folder to be able to <strong>IMPORT</strong> it in the next step.</p>
+
+<h1 id="second-step-the-container-that-we-will-ship-and-run:3973c3ec19897e2b10e699a49fe418cc">Second step: The container that we will ship and run</h1>
 
 <pre><code>FROM python:2.7-slim
 
@@ -158,6 +160,8 @@ g.conf&quot;, &quot;-b&quot;, &quot;:8000&quot;, &quot;rockerdemo:app&quot;]
 </code></pre>
 
 <p>This part is pretty standard Dockerfile syntax.</p>
+
+<h1 id="building-tagging-and-pushing-the-container:3973c3ec19897e2b10e699a49fe418cc">Building, tagging and pushing the container</h1>
 
 <pre><code>PUSH sebest/rocker-with-python-project:{{ .Version }}
 PUSH sebest/rocker-with-python-project:latest

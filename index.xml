@@ -19,15 +19,15 @@
 
 &lt;p&gt;&lt;a href=&#34;https://github.com/grammarly/rocker&#34;&gt;Rocker&lt;/a&gt; is a tool developed by &lt;a href=&#34;http://tech.grammarly.com/blog/posts/Making-Docker-Rock-at-Grammarly.html&#34;&gt;Grammarly&lt;/a&gt; that is offering additional functionalities to build Docker images.&lt;/p&gt;
 
-&lt;p&gt;The syntax of the Rockerfiles are a superset of Dockerfiles.&lt;/p&gt;
+&lt;p&gt;The syntax of the Rockerfiles is a superset of Dockerfiles.&lt;/p&gt;
 
-&lt;p&gt;Rocker is really usefull to create minimal/small Docker images as you can split the process in 2 steps, one to build your project in a first container and one to actually ship and run.&lt;/p&gt;
+&lt;p&gt;Rocker is useful for creating minimal/small Docker images as you can split the process in 2 steps, the first to build your project in a first container and the second to ship and run. In the following part of this post we will further explain and show how we can use Rocker to easily generate Docker images for Python projects.&lt;/p&gt;
 
-&lt;p&gt;In the following part of this post we will see how we can use that to easily generate Docker images for Python projects, the first container will have all the tools to generate the &lt;a href=&#34;http://pythonwheels.com/&#34;&gt;Python wheels&lt;/a&gt; like a C compiler and all the development headers and libraries, the final container will only contain the installed wheels and dynamic libraries.&lt;/p&gt;
+&lt;p&gt;In the first container, we will install all the tools to generate the &lt;a href=&#34;http://pythonwheels.com/&#34;&gt;Python wheels&lt;/a&gt; like a C compiler and all the development headers and libraries. The second container will only hold the installed wheels and dynamic libraries.&lt;/p&gt;
 
 &lt;h1 id=&#34;first-step-the-build-requirements:3973c3ec19897e2b10e699a49fe418cc&#34;&gt;First step: The build requirements&lt;/h1&gt;
 
-&lt;p&gt;If you are already familiar with Dockerfiles moving to Rockerfile is really straighforward, the first step is to create a file named &lt;strong&gt;Dockerfile&lt;/strong&gt; at the root of your project.&lt;/p&gt;
+&lt;p&gt;If you are already familiar with Dockerfiles, then moving to Rockerfile is really straightforward. The first step is to create a file named &lt;strong&gt;Dockerfile&lt;/strong&gt; at the root of your project.&lt;/p&gt;
 
 &lt;p&gt;You can see the full repository &lt;a href=&#34;https://github.com/sebest/sebest-hugo-demo/tree/master/rocker-with-python-project&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
 
@@ -52,9 +52,9 @@ WORKDIR /src
 RUN sed -ie s/\&#39;0.0\&#39;/\&#39;{{ .Version }}\&#39;/g setup.py
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;Rocker provides a templating functionality that we use, to see the version number of our package, this can be really usefull if you use a CI to set the version number using the build number.&lt;/p&gt;
+&lt;p&gt;Rocker provides a templating functionality that we use to set the version number of our package. This can be really useful if you use a CI and want to use the build number as the version number.&lt;/p&gt;
 
-&lt;p&gt;Here is an exempt of our setup.py&lt;/p&gt;
+&lt;p&gt;Here is an excerpt of our setup.py&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;setup(
     name=&#39;rockerdemo&#39;,
@@ -68,7 +68,7 @@ RUN sed -ie s/\&#39;0.0\&#39;/\&#39;{{ .Version }}\&#39;/g setup.py
 &lt;pre&gt;&lt;code&gt;$ rocker build -var Version=1.0
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;rocker provides the &lt;strong&gt;-print&lt;/strong&gt; parameter to visualize the Rockerfile after it has been templated.&lt;/p&gt;
+&lt;p&gt;Rocker provides the &lt;strong&gt;-print&lt;/strong&gt; parameter to visualize the Rockerfile after it has been templated.&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;RUN python setup.py bdist_wheel
 RUN pip wheel .
@@ -81,6 +81,8 @@ RUN pip wheel setproctitle gunicorn json-logging-py
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;All the wheels are stored in &lt;strong&gt;/src/wheelhouse&lt;/strong&gt;, so we &lt;strong&gt;EXPORT&lt;/strong&gt; this folder to be able to &lt;strong&gt;IMPORT&lt;/strong&gt; it in the next step.&lt;/p&gt;
+
+&lt;h1 id=&#34;second-step-the-container-that-we-will-ship-and-run:3973c3ec19897e2b10e699a49fe418cc&#34;&gt;Second step: The container that we will ship and run&lt;/h1&gt;
 
 &lt;pre&gt;&lt;code&gt;FROM python:2.7-slim
 
@@ -105,6 +107,8 @@ g.conf&amp;quot;, &amp;quot;-b&amp;quot;, &amp;quot;:8000&amp;quot;, &amp;quot;r
 
 &lt;p&gt;This part is pretty standard Dockerfile syntax.&lt;/p&gt;
 
+&lt;h1 id=&#34;building-tagging-and-pushing-the-container:3973c3ec19897e2b10e699a49fe418cc&#34;&gt;Building, tagging and pushing the container&lt;/h1&gt;
+
 &lt;pre&gt;&lt;code&gt;PUSH sebest/rocker-with-python-project:{{ .Version }}
 PUSH sebest/rocker-with-python-project:latest
 &lt;/code&gt;&lt;/pre&gt;
@@ -124,7 +128,11 @@ PUSH sebest/rocker-with-python-project:latest
       <pubDate>Wed, 07 Oct 2015 12:16:42 -0700</pubDate>
       
       <guid>https://sebest.github.io/post/create-a-small-docker-image-for-a-golang-binary/</guid>
-      <description>&lt;p&gt;One of the really nice thing with GoLang is that it is really easy to deploy in production as you don&amp;rsquo;t have to deploy any dependency, the problem with the official Docker images for GoLang is that they are really huge (more than 500MB).&lt;/p&gt;
+      <description>&lt;p&gt;A benefit with using GoLang is the ease in deploying to production as it does not require dependencies.&lt;/p&gt;
+
+&lt;p&gt;The official Docker images for GoLang are large (typically 500MB+). The reason why they are large is because they contains all the toolchain to build a GoLang program. However you don&amp;rsquo;t need any of this to actually run it as it is a static binary.&lt;/p&gt;
+
+&lt;p&gt;In this post we will see how to generate a small Docker image weighing less than 8MB.&lt;/p&gt;
 
 &lt;p&gt;Let&amp;rsquo;s start with a basic Go program:&lt;/p&gt;
 
@@ -151,7 +159,7 @@ func main() {
 }
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;Please note that i&amp;rsquo;m using OsX.&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Note: This post is written under OSX.&lt;/em&gt;&lt;/p&gt;
 
 &lt;p&gt;Let&amp;rsquo;s compile our binary and check its size.&lt;/p&gt;
 
@@ -160,7 +168,9 @@ $ ls -lh main
 -rwxr-xr-x  1 sebest  staff   6,3M  7 oct 13:38 main
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;The binary is 6.3 MB, now let create a Docker image, using the following Dockerfile:&lt;/p&gt;
+&lt;p&gt;The binary is 6.3 MB.&lt;/p&gt;
+
+&lt;p&gt;Now let&amp;rsquo;s create a Docker image using the following Dockerfile:&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;FROM scratch
 ADD main /
@@ -190,7 +200,7 @@ Error response from daemon: Cannot start container cda57701734998a80a1637e59db64
 
 &lt;p&gt;We got an error: [8] System error: exec format error&lt;/p&gt;
 
-&lt;p&gt;The reason is that this binary is an OsX binary and not a Linux binary:&lt;/p&gt;
+&lt;p&gt;The reason is that this binary is an OSX binary and not a Linux binary:&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;$ file main
 main: Mach-O 64-bit executable x86_64
