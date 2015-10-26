@@ -6,8 +6,76 @@
     <description>Recent content in Posts on ☁️  Sebest&#39;s Nuage ☁️</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 20 Oct 2015 09:38:34 +0800</lastBuildDate>
+    <lastBuildDate>Fri, 23 Oct 2015 10:36:48 +0800</lastBuildDate>
     <atom:link href="https://sebest.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Using Travis.ci to build Docker images</title>
+      <link>https://sebest.github.io/post/using-travis-ci-to-build-docker-images/</link>
+      <pubDate>Fri, 23 Oct 2015 10:36:48 +0800</pubDate>
+      
+      <guid>https://sebest.github.io/post/using-travis-ci-to-build-docker-images/</guid>
+      <description>
+
+&lt;p&gt;Travis.ci recently released support to use Docker inside the CI pipeline You can read the announcement &lt;a href=&#34;http://blog.travis-ci.com/2015-08-19-using-docker-on-travis-ci/&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;In this post, I will show you how to use this feature to build Docker images and store them on a Docker registry.&lt;/p&gt;
+
+&lt;p&gt;I&amp;rsquo;ll discuss to methods -  one using only Docker commands and the other using Rocker which I recently discussed about &lt;a href=&#34;https://sebest.github.io/post/using-rocker-to-build-minimal-python-docker-images/&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;storing-your-docker-registry-credentials-securely:64b13e5a1eef6b4d76cee8a3aa68e952&#34;&gt;Storing your docker registry credentials securely&lt;/h2&gt;
+
+&lt;p&gt;The first step is to store you docker registry credentials in the &lt;strong&gt;.travis.yml&lt;/strong&gt; file. We will store them in some environment variables.&lt;/p&gt;
+
+&lt;p&gt;You can read more about this on Travic.ci website &lt;a href=&#34;http://docs.travis-ci.com/user/environment-variables/#Encrypting-Variables-Using-a-Public-Key&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ travis encrypt DOCKER_EMAIL=email@gmail.com
+$ travis encrypt DOCKER_USERNAME=username
+$ travis encrypt DOCKER_PASS=password
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;And then store the secure version in your &lt;strong&gt;.travis.yml&lt;/strong&gt; file.&lt;/p&gt;
+
+&lt;p&gt;We will add a comment on the line to help us remember which line contains which environment variable.&lt;/p&gt;
+
+&lt;p&gt;We will also add an environment variable containing the 8 first characters of the git commit hash.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;env:
+  global:
+    - secure: &amp;quot;UkF2CHX0lUZ...VI/LE=&amp;quot; # DOCKER_EMAIL
+    - secure: &amp;quot;Z3fdBNPt5hR...VI/LE=&amp;quot; # DOCKER_UERNAME
+    - secure: &amp;quot;F4XbD6WybHC...VI/LE=&amp;quot; # DOCKER_PASS
+    - COMMIT=${TRAVIS_COMMIT::8}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;In the &lt;strong&gt;after_success&lt;/strong&gt; section of the &lt;strong&gt;.travis.yml&lt;/strong&gt; file, we log on Docker Hub registry, then we build the image.&lt;/p&gt;
+
+&lt;p&gt;We also tag the generated image with:
+ * the short git commit hash
+ * the travis build number
+ * &lt;strong&gt;latest&lt;/strong&gt; if it is the &lt;strong&gt;master&lt;/strong&gt; branch, otherwise the name of the branch&lt;/p&gt;
+
+&lt;p&gt;And finally we push it on the Docker Hub registry&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;after_success:
+  - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+  - export REPO=pixelle/pxladsrv
+  - export TAG=`if [ &amp;quot;$TRAVIS_BRANCH&amp;quot; == &amp;quot;master&amp;quot; ]; then echo &amp;quot;latest&amp;quot;; else echo $TRAVIS_BRANCH ; fi`
+  - docker build -f Dockerfile -t $REPO:$COMMIT .
+  - docker tag $REPO:$COMMIT $REPO:$TAG
+  - docker tag $REPO:$COMMIT $REPO:travis-$TRAVIS_BUILD_NUMBER
+  - docker push $REPO
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;An alternative solution is to use Rocker that we presented in a precedent &lt;a href=&#34;https://sebest.github.io/post/using-rocker-to-build-minimal-python-docker-images/&#34;&gt;post&lt;/a&gt;.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;after_success:
+  - curl -O -L https://github.com/grammarly/rocker/releases/download/0.2.2/rocker-0.2.2_linux_amd64.tar.gz
+  - tar xvfz rocker-0.2.2_linux_amd64.tar.gz
+  - ./rocker build --auth $DOCKER_USER:$DOCKER_PASS --push -var TRAVIS_BUILD_NUMBER=$TRAVIS_BUILD_NUMBER -var COMMIT=$COMMIT
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
     
     <item>
       <title>Using Rocker to build minimal Python Docker images</title>
@@ -130,7 +198,7 @@ PUSH sebest/rocker-with-python-project:latest
       <guid>https://sebest.github.io/post/create-a-small-docker-image-for-a-golang-binary/</guid>
       <description>&lt;p&gt;A benefit with using GoLang is the ease in deploying to production as it does not require dependencies.&lt;/p&gt;
 
-&lt;p&gt;The official Docker images for GoLang are large (typically 500MB+). The reason why they are large is because they contains all the toolchain to build a GoLang program. However you don&amp;rsquo;t need any of this to actually run it as it is a static binary.&lt;/p&gt;
+&lt;p&gt;The official Docker images for GoLang are large (typically 500MB+). The reason why they are large is because they contain all the toolchain to build a GoLang program. However you don&amp;rsquo;t need any of this to actually run it as it is a static binary.&lt;/p&gt;
 
 &lt;p&gt;In this post we will see how to generate a small Docker image weighing less than 8MB.&lt;/p&gt;
 
@@ -225,9 +293,9 @@ main.main()
 	/Users/sebest/work/blog-demo/demo-build-static-golang-binary-and-docker-image/main.go:12 +0x97
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;We now have a different error, the reason is that the scratch image does not have any zoneinfo for timezones, let&amp;rsquo;s copy the zoneinfo folder from OsX.&lt;/p&gt;
+&lt;p&gt;We now have a different error. The reason is because the scratch image does not have any zoneinfo for timezones. Let&amp;rsquo;s copy the zoneinfo folder from OSX.&lt;/p&gt;
 
-&lt;p&gt;As the scratch image does not contain anything we don&amp;rsquo;t even have access to mkdir, the workaround is to create a tar.gz image and use the ADD directive in the Dockerfile.&lt;/p&gt;
+&lt;p&gt;As the scratch image does not contain anything, we don&amp;rsquo;t even have access to mkdir. The workaround here is to create a tar.gz image and use the ADD directive in the Dockerfile.&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;$ tar cfz zoneinfo.tar.gz /usr/share/zoneinfo
 &lt;/code&gt;&lt;/pre&gt;
@@ -249,7 +317,7 @@ GoLang website is DOWN
 Err: Get https://golang.org/: x509: failed to load system roots and no roots provided
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;So now the zoneinfo issue is fixed but we still have an error when doing a HTTPS request, the reason is that the scratch image does not have any SSL CA certificates.&lt;/p&gt;
+&lt;p&gt;So now the zoneinfo issue is fixed but we still have an error when doing a HTTPS request. The reason is because the scratch image does not have any SSL CA certificates.&lt;/p&gt;
 
 &lt;p&gt;Let&amp;rsquo;s download the Certificates from &lt;a href=&#34;http://curl.haxx.se/docs/caextract.html&#34;&gt;http://curl.haxx.se/docs/caextract.html&lt;/a&gt;&lt;/p&gt;
 
@@ -275,14 +343,14 @@ Paris time: 2015-10-07 23:08:49.834033002 +0200 CEST
 GoLang website is UP
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;Everything works fine now, let&amp;rsquo;s check the size of the Docker image&lt;/p&gt;
+&lt;p&gt;Everything works fine now so let&amp;rsquo;s check the size of the Docker image&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;$ docker images
 REPOSITORY                TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
 demo                      latest              dfa7313cd338        3 minutes ago       7.075 MB
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;So our binary is 6.3MB and the Docker image is less than 7.1MB!&lt;/p&gt;
+&lt;p&gt;As you can see,  our binary is 6.3MB and the Docker image is less than 7.1MB!&lt;/p&gt;
 
 &lt;p&gt;The source code for all of this is available &lt;a href=&#34;https://github.com/sebest/sebest-hugo-demo/tree/master/create-a-small-docker-image-for-a-golang-binary&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
 </description>

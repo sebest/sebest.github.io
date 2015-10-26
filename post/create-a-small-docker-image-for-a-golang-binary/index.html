@@ -71,7 +71,7 @@
     <article>
       <p>A benefit with using GoLang is the ease in deploying to production as it does not require dependencies.</p>
 
-<p>The official Docker images for GoLang are large (typically 500MB+). The reason why they are large is because they contains all the toolchain to build a GoLang program. However you don&rsquo;t need any of this to actually run it as it is a static binary.</p>
+<p>The official Docker images for GoLang are large (typically 500MB+). The reason why they are large is because they contain all the toolchain to build a GoLang program. However you don&rsquo;t need any of this to actually run it as it is a static binary.</p>
 
 <p>In this post we will see how to generate a small Docker image weighing less than 8MB.</p>
 
@@ -166,9 +166,9 @@ main.main()
 	/Users/sebest/work/blog-demo/demo-build-static-golang-binary-and-docker-image/main.go:12 +0x97
 </code></pre>
 
-<p>We now have a different error, the reason is that the scratch image does not have any zoneinfo for timezones, let&rsquo;s copy the zoneinfo folder from OsX.</p>
+<p>We now have a different error. The reason is because the scratch image does not have any zoneinfo for timezones. Let&rsquo;s copy the zoneinfo folder from OSX.</p>
 
-<p>As the scratch image does not contain anything we don&rsquo;t even have access to mkdir, the workaround is to create a tar.gz image and use the ADD directive in the Dockerfile.</p>
+<p>As the scratch image does not contain anything, we don&rsquo;t even have access to mkdir. The workaround here is to create a tar.gz image and use the ADD directive in the Dockerfile.</p>
 
 <pre><code>$ tar cfz zoneinfo.tar.gz /usr/share/zoneinfo
 </code></pre>
@@ -190,7 +190,7 @@ GoLang website is DOWN
 Err: Get https://golang.org/: x509: failed to load system roots and no roots provided
 </code></pre>
 
-<p>So now the zoneinfo issue is fixed but we still have an error when doing a HTTPS request, the reason is that the scratch image does not have any SSL CA certificates.</p>
+<p>So now the zoneinfo issue is fixed but we still have an error when doing a HTTPS request. The reason is because the scratch image does not have any SSL CA certificates.</p>
 
 <p>Let&rsquo;s download the Certificates from <a href="http://curl.haxx.se/docs/caextract.html">http://curl.haxx.se/docs/caextract.html</a></p>
 
@@ -216,14 +216,14 @@ Paris time: 2015-10-07 23:08:49.834033002 +0200 CEST
 GoLang website is UP
 </code></pre>
 
-<p>Everything works fine now, let&rsquo;s check the size of the Docker image</p>
+<p>Everything works fine now so let&rsquo;s check the size of the Docker image</p>
 
 <pre><code>$ docker images
 REPOSITORY                TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
 demo                      latest              dfa7313cd338        3 minutes ago       7.075 MB
 </code></pre>
 
-<p>So our binary is 6.3MB and the Docker image is less than 7.1MB!</p>
+<p>As you can see,  our binary is 6.3MB and the Docker image is less than 7.1MB!</p>
 
 <p>The source code for all of this is available <a href="https://github.com/sebest/sebest-hugo-demo/tree/master/create-a-small-docker-image-for-a-golang-binary">here</a>.</p>
 
