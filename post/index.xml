@@ -202,6 +202,8 @@ PUSH sebest/rocker-with-python-project:latest
 
 &lt;p&gt;In this post we will see how to generate a small Docker image weighing less than 8MB.&lt;/p&gt;
 
+&lt;p&gt;All files mentioned in this post are available &lt;a href=&#34;https://github.com/sebest-blog/create-a-small-docker-image-for-a-golang-binary&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
 &lt;p&gt;Let&amp;rsquo;s start with a basic Go program:&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;package main
@@ -352,7 +354,7 @@ demo                      latest              dfa7313cd338        3 minutes ago 
 
 &lt;p&gt;As you can see,  our binary is 6.3MB and the Docker image is less than 7.1MB!&lt;/p&gt;
 
-&lt;p&gt;The source code for all of this is available &lt;a href=&#34;https://github.com/sebest/sebest-hugo-demo/tree/master/create-a-small-docker-image-for-a-golang-binary&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;The source code for all of this is available &lt;a href=&#34;https://github.com/sebest-blog/create-a-small-docker-image-for-a-golang-binary&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
 </description>
     </item>
     
