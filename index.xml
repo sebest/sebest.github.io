@@ -97,7 +97,7 @@ $ travis encrypt DOCKER_PASS=password
 
 &lt;p&gt;If you are already familiar with Dockerfiles, then moving to Rockerfile is really straightforward. The first step is to create a file named &lt;strong&gt;Dockerfile&lt;/strong&gt; at the root of your project.&lt;/p&gt;
 
-&lt;p&gt;You can see the full repository &lt;a href=&#34;https://github.com/sebest/sebest-hugo-demo/tree/master/rocker-with-python-project&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;You can see the full repository &lt;a href=&#34;https://github.com/sebest-blog/create-a-small-docker-image-for-a-golang-binary&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;FROM python:2.7-slim
 &lt;/code&gt;&lt;/pre&gt;
