@@ -1,0 +1,300 @@
+
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+
+  
+  <meta charset="UTF-8">
+  <title>
+    ProTips: using Gunicorn inside a Docker image | ☁️  Sebest&#39;s Nuage ☁️
+  </title>
+
+
+  
+  <meta name="viewport" content="width=device-width,user-scalable=no,maximum-scale=1,initial-scale=1">
+
+  
+  <link rel="canonical" href="https://sebest.github.io/post/protips-using-gunicorn-inside-a-docker-image/"/>
+
+  
+  <link rel="stylesheet" href="/css/sanitize.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="stylesheet" href="/css/custom.css">
+  
+  
+  <link href="https://sebest.github.io/index.xml" rel="alternate" type="application/rss+xml" title="☁️  Sebest&#39;s Nuage ☁️" />
+  <link href="https://sebest.github.io/index.xml" rel="feed" type="application/rss+xml" title="☁️  Sebest&#39;s Nuage ☁️" />
+
+  
+  <script type="text/javascript">var switchTo5x=true;</script>
+  <script type="text/javascript" src="https://ws.sharethis.com/button/buttons.js"></script>
+  <script type="text/javascript">stLight.options({publisher: "2b9fffc6-b3fe-4988-a0ef-4f9dcce98eaa", doNotHash: true, doNotCopy: true, hashAddressBar: false});</script>
+
+
+</head>
+
+
+
+<body>
+<div class="container">
+
+  
+  <header role="banner">
+    <div class="row gutters">
+      <div id="site-title" class="col span_6">
+        <h1><a href="https://sebest.github.io/">☁️  Sebest&#39;s Nuage ☁️</a></h1>
+        <h2>The DevOps corner.</h2>
+      </div>
+      <div id="social" class="col span_6">
+        <ul>
+          <li><a href="https://twitter.com/sebest" target="_blank">Twitter</a></li>
+          <li><a href="https://facebook.com/tsebes" target="_blank">Facebook</a></li>
+          <li><a href="https://github.com/sebest" target="_blank">GitHub</a></li>
+          
+        </ul>
+      </div>
+    </div>
+  </header>
+
+
+  
+  <main id="single" role="main">
+    <div class="article-header">
+      <h1>ProTips: using Gunicorn inside a Docker image</h1>
+      <div class="meta">
+        Oct 24, 2015 &nbsp;
+        
+      </div>
+    </div>
+    <article>
+      
+
+<p>In this post i will describe how i use <a href="http://gunicorn.org/">Gunicorn</a> inside Docker. We will specifically see how to configure Gunicorn and how to configure the logger to work nicely with Docker.</p>
+
+<p>We will use the following Python WSGI app in our examples as <strong>myapp.py</strong>:</p>
+<div class="highlight" style="background: #f0f3f3"><pre style="line-height: 125%"><span style="color: #006699; font-weight: bold">import</span> <span style="color: #00CCFF; font-weight: bold">logging</span>
+
+logger <span style="color: #555555">=</span> logging<span style="color: #555555">.</span>getLogger(__name__)
+
+<span style="color: #006699; font-weight: bold">def</span> <span style="color: #CC00FF">app</span>(environ, start_response):
+    path <span style="color: #555555">=</span> environ<span style="color: #555555">.</span>get(<span style="color: #CC3300">&#39;PATH_INFO&#39;</span>, <span style="color: #CC3300">&#39;&#39;</span>)
+    <span style="color: #006699; font-weight: bold">if</span> path <span style="color: #555555">==</span> <span style="color: #CC3300">&#39;/exception&#39;</span>:
+        <span style="color: #006699; font-weight: bold">raise</span> <span style="color: #CC0000; font-weight: bold">Exception</span>(<span style="color: #CC3300">&#39;My exception!&#39;</span>)
+
+    data <span style="color: #555555">=</span> <span style="color: #CC3300">&quot;Request on </span><span style="color: #AA0000">%s</span><span style="color: #CC3300"> </span><span style="color: #CC3300; font-weight: bold">\n</span><span style="color: #CC3300">&quot;</span> <span style="color: #555555">%</span> path
+    logger<span style="color: #555555">.</span>info(data, extra<span style="color: #555555">=</span>{<span style="color: #CC3300">&#39;tags&#39;</span>: [<span style="color: #CC3300">&#39;role:web&#39;</span>, <span style="color: #CC3300">&#39;env:prod&#39;</span>]})
+    start_response(<span style="color: #CC3300">&quot;200 OK&quot;</span>, [
+          (<span style="color: #CC3300">&quot;Content-Type&quot;</span>, <span style="color: #CC3300">&quot;text/plain&quot;</span>),
+          (<span style="color: #CC3300">&quot;Content-Length&quot;</span>, <span style="color: #336666">str</span>(<span style="color: #336666">len</span>(data)))
+      ])
+    <span style="color: #006699; font-weight: bold">return</span> <span style="color: #336666">iter</span>([data])
+</pre></div>
+
+<h2 id="configuring-gunicorn:dfe07d0fde6b925b72e49a7b67d35d2c">Configuring Gunicorn</h2>
+
+<p>The best way to configure a Docker Container is using environment variables, Gunicorn does not natively support this. Gunicorn supports a <a href="http://docs.gunicorn.org/en/latest/configure.html#configuration-file">configuration file</a> that can contain Python code, we will use this feature to be able to pass environment variables to configure it.</p>
+
+<p>We create a file named <strong>gunicorn.conf</strong> with the following content:</p>
+<div class="highlight" style="background: #f0f3f3"><pre style="line-height: 125%"><span style="color: #006699; font-weight: bold">import</span> <span style="color: #00CCFF; font-weight: bold">os</span>
+
+<span style="color: #006699; font-weight: bold">for</span> k,v <span style="color: #000000; font-weight: bold">in</span> os<span style="color: #555555">.</span>environ<span style="color: #555555">.</span>items():
+    <span style="color: #006699; font-weight: bold">if</span> k<span style="color: #555555">.</span>startswith(<span style="color: #CC3300">&quot;GUNICORN_&quot;</span>):
+        key <span style="color: #555555">=</span> k<span style="color: #555555">.</span>split(<span style="color: #CC3300">&#39;_&#39;</span>, <span style="color: #FF6600">1</span>)[<span style="color: #FF6600">1</span>]<span style="color: #555555">.</span>lower()
+        <span style="color: #336666">locals</span>()[key] <span style="color: #555555">=</span> v
+</pre></div>
+
+<p>This code will iterate over all environment variables and find those starting by <strong>GUNICORN_</strong> and set a local variable with the remaining part, lowercased: <strong>GUNICORN_MY_PARAMETER=42</strong> will create a variable named <strong>my_parameter</strong> with &lsquo;42&rsquo; as the value.</p>
+
+<p>We are now able to pass any parameter from this <a href="http://docs.gunicorn.org/en/latest/settings.html">list</a> by prefixing them with GUNICORN_ and uppercasing the parameter name.</p>
+
+<p>Examples:</p>
+
+<ul>
+<li>The number of Gunicorn workers: GUNICORN_WORKERS=5</li>
+<li>The backlog: GUNICORN_BACKLOG=4096</li>
+</ul>
+
+<p>We can test it by starting Gunicorn like this:</p>
+<div class="highlight" style="background: #f0f3f3"><pre style="line-height: 125%"><span style="color: #000099; font-weight: bold">$</span> <span style="color: #336666">export </span><span style="color: #003333">GUNICORN_WORKERS</span><span style="color: #555555">=</span>2
+<span style="color: #000099; font-weight: bold">$</span> <span style="color: #336666">export </span><span style="color: #003333">GUNICORN_BACKLOG</span><span style="color: #555555">=</span>4096
+<span style="color: #000099; font-weight: bold">$</span> <span style="color: #336666">export </span><span style="color: #003333">GUNICORN_BIND</span><span style="color: #555555">=</span>0.0.0.0:8080
+<span style="color: #000099; font-weight: bold">$</span> gunicorn --config gunicorn.conf myapp:app
+<span style="color: #AAAAAA">[2015-10-29 11:39:34 +0800] [27229] [INFO] Starting gunicorn 19.3.0</span>
+<span style="color: #AAAAAA">[2015-10-29 11:39:34 +0800] [27229] [INFO] Listening at: http://0.0.0.0:8080 (27229)</span>
+<span style="color: #AAAAAA">[2015-10-29 11:39:34 +0800] [27229] [INFO] Using worker: sync</span>
+<span style="color: #AAAAAA">[2015-10-29 11:39:34 +0800] [27232] [INFO] Booting worker with pid: 27232</span>
+<span style="color: #AAAAAA">[2015-10-29 11:39:34 +0800] [27233] [INFO] Booting worker with pid: 27233</span>
+</pre></div>
+
+<h2 id="setting-up-logging:dfe07d0fde6b925b72e49a7b67d35d2c">Setting up logging</h2>
+
+<p>A common way to setup logging in a Docker base architecture is to output the logs on the standard output and configure the Docker Daemon to forward this to Syslog.</p>
+
+<p>As Python logs can be multilines, this is especially true for exceptions, it is recommended to use a <strong>JSON</strong> formatter.</p>
+
+<p>We will use the <a href="https://pypi.python.org/pypi/json-logging-py/">json-logging-py</a> (<a href="https://github.com/sebest/json-logging-py">GitHub</a>) library as our logging formatter.</p>
+
+<p>Gunicorn can use a configuration file using the Python logging <a href="https://docs.python.org/2/library/logging.config.html#logging.config.fileConfig">fileConfig format</a>.</p>
+
+<p>The following <strong>logging.conf</strong> file configures the root logger and Gunicorn error logger to output the logs on the standard output using a JSON formatter:</p>
+<div class="highlight" style="background: #f0f3f3"><pre style="line-height: 125%"><span style="color: #006699; font-weight: bold">[loggers]</span>
+<span style="color: #330099">keys</span><span style="color: #555555">=</span><span style="color: #CC3300">root, gunicorn.error</span>
+
+<span style="color: #006699; font-weight: bold">[handlers]</span>
+<span style="color: #330099">keys</span><span style="color: #555555">=</span><span style="color: #CC3300">console</span>
+
+<span style="color: #006699; font-weight: bold">[formatters]</span>
+<span style="color: #330099">keys</span><span style="color: #555555">=</span><span style="color: #CC3300">json</span>
+
+<span style="color: #006699; font-weight: bold">[logger_root]</span>
+<span style="color: #330099">level</span><span style="color: #555555">=</span><span style="color: #CC3300">INFO</span>
+<span style="color: #330099">handlers</span><span style="color: #555555">=</span><span style="color: #CC3300">console</span>
+
+<span style="color: #006699; font-weight: bold">[logger_gunicorn.error]</span>
+<span style="color: #330099">level</span><span style="color: #555555">=</span><span style="color: #CC3300">ERROR</span>
+<span style="color: #330099">handlers</span><span style="color: #555555">=</span><span style="color: #CC3300">console</span>
+<span style="color: #330099">propagate</span><span style="color: #555555">=</span><span style="color: #CC3300">0</span>
+<span style="color: #330099">qualname</span><span style="color: #555555">=</span><span style="color: #CC3300">gunicorn.error</span>
+
+<span style="color: #006699; font-weight: bold">[handler_console]</span>
+<span style="color: #330099">class</span><span style="color: #555555">=</span><span style="color: #CC3300">StreamHandler</span>
+<span style="color: #330099">formatter</span><span style="color: #555555">=</span><span style="color: #CC3300">json</span>
+<span style="color: #330099">args</span><span style="color: #555555">=</span><span style="color: #CC3300">(sys.stdout, )</span>
+
+<span style="color: #006699; font-weight: bold">[formatter_json]</span>
+<span style="color: #330099">class</span><span style="color: #555555">=</span><span style="color: #CC3300">jsonlogging.JSONFormatter</span>
+</pre></div>
+
+<p>We can test it by starting Gunicorn like this:</p>
+<div class="highlight" style="background: #f0f3f3"><pre style="line-height: 125%"><span style="color: #000099; font-weight: bold">$</span> gunicorn --log-config logging.conf myapp:app
+</pre></div>
+
+<p><em>Note:</em> I will &lsquo;pretty print&rsquo; the JSON output for readability but the real output is on a single line.</p>
+
+<p>If we do a request on <strong><a href="http://127.0.0.1:8000/path">http://127.0.0.1:8000/path</a></strong> we have the following output:</p>
+<div class="highlight" style="background: #f0f3f3"><pre style="line-height: 125%">{
+    <span style="color: #330099; font-weight: bold">&quot;host&quot;</span>: <span style="color: #CC3300">&quot;silicon.local&quot;</span>,
+    <span style="color: #330099; font-weight: bold">&quot;level&quot;</span>: <span style="color: #CC3300">&quot;INFO&quot;</span>,
+    <span style="color: #330099; font-weight: bold">&quot;logger&quot;</span>: <span style="color: #CC3300">&quot;myapp&quot;</span>,
+    <span style="color: #330099; font-weight: bold">&quot;message&quot;</span>: <span style="color: #CC3300">&quot;Request on /path \n&quot;</span>,
+    <span style="color: #330099; font-weight: bold">&quot;path&quot;</span>: <span style="color: #CC3300">&quot;/Users/sebest/work/blog-demo/gunicorn-with-docker/myapp.py&quot;</span>,
+    <span style="color: #330099; font-weight: bold">&quot;tags&quot;</span>: [
+        <span style="color: #CC3300">&quot;role:web&quot;</span>,
+        <span style="color: #CC3300">&quot;env:prod&quot;</span>
+    ],
+    <span style="color: #330099; font-weight: bold">&quot;timestamp&quot;</span>: <span style="color: #CC3300">&quot;2015-10-29T03:41:41.589027Z&quot;</span>
+}
+</pre></div>
+
+<p>Now let&rsquo;s try to request <strong><a href="http://127.0.0.1:8000/exception">http://127.0.0.1:8000/exception</a></strong> to generate an Exception:</p>
+<div class="highlight" style="background: #f0f3f3"><pre style="line-height: 125%">{
+    <span style="color: #330099; font-weight: bold">&quot;exc_info&quot;</span>: <span style="color: #CC3300">&quot;Traceback (most recent call last):\n  File \&quot;/Users/sebest/.virtualenvs/pxlapi/lib/python2.7/site-packages/gunicorn/workers/sync.py\&quot;, line 130, in handle\n    self.handle_request(listener, req, client, addr)\n  File \&quot;/Users/sebest/.virtualenvs/pxlapi/lib/python2.7/site-packages/gunicorn/workers/sync.py\&quot;, line 171, in handle_request\n    respiter = self.wsgi(environ, resp.start_response)\n  File \&quot;/Users/sebest/work/blog-demo/gunicorn-with-docker/myapp.py\&quot;, line 10, in app\n    raise Exception(&#39;My exception!&#39;)\nException: My exception!\n&quot;</span>,
+    <span style="color: #330099; font-weight: bold">&quot;filename&quot;</span>: <span style="color: #CC3300">&quot;glogging.py&quot;</span>,
+    <span style="color: #330099; font-weight: bold">&quot;host&quot;</span>: <span style="color: #CC3300">&quot;silicon.local&quot;</span>,
+    <span style="color: #330099; font-weight: bold">&quot;level&quot;</span>: <span style="color: #CC3300">&quot;ERROR&quot;</span>,
+    <span style="color: #330099; font-weight: bold">&quot;lineno&quot;</span>: <span style="color: #FF6600">228</span>,
+    <span style="color: #330099; font-weight: bold">&quot;logger&quot;</span>: <span style="color: #CC3300">&quot;gunicorn.error&quot;</span>,
+    <span style="color: #330099; font-weight: bold">&quot;message&quot;</span>: <span style="color: #CC3300">&quot;Error handling request&quot;</span>,
+    <span style="color: #330099; font-weight: bold">&quot;path&quot;</span>: <span style="color: #CC3300">&quot;/Users/sebest/.virtualenvs/pxlapi/lib/python2.7/site-packages/gunicorn/glogging.py&quot;</span>,
+    <span style="color: #330099; font-weight: bold">&quot;tags&quot;</span>: [],
+    <span style="color: #330099; font-weight: bold">&quot;timestamp&quot;</span>: <span style="color: #CC3300">&quot;2015-10-29T03:46:02.349887Z&quot;</span>
+}
+</pre></div>
+
+<p>We can see the Python traceback in the <strong>exec_info</strong> key of the JSON output:</p>
+<div class="highlight" style="background: #f0f3f3"><pre style="line-height: 125%"><span style="color: #99CC66">Traceback (most recent call last):</span>
+  File <span style="color: #336666">&quot;/Users/sebest/.virtualenvs/pxlapi/lib/python2.7/site-packages/gunicorn/workers/sync.py&quot;</span>, line <span style="color: #FF6600">130</span>, in handle
+    <span style="color: #336666">self</span><span style="color: #555555">.</span>handle_request(listener, req, client, addr)
+  File <span style="color: #336666">&quot;/Users/sebest/.virtualenvs/pxlapi/lib/python2.7/site-packages/gunicorn/workers/sync.py&quot;</span>, line <span style="color: #FF6600">171</span>, in handle_request
+    respiter <span style="color: #555555">=</span> <span style="color: #336666">self</span><span style="color: #555555">.</span>wsgi(environ, resp<span style="color: #555555">.</span>start_response)
+  File <span style="color: #336666">&quot;/Users/sebest/work/blog-demo/gunicorn-with-docker/myapp.py&quot;</span>, line <span style="color: #FF6600">10</span>, in app
+    <span style="color: #006699; font-weight: bold">raise</span> <span style="color: #CC0000; font-weight: bold">Exception</span>(<span style="color: #CC3300">&#39;My exception!&#39;</span>)
+<span style="color: #FF0000">Exception</span>: My exception!
+</pre></div>
+
+<h2 id="wrapping-all-of-this-together-in-a-docker-image:dfe07d0fde6b925b72e49a7b67d35d2c">Wrapping all of this together in a Docker image</h2>
+
+<p>We use the following Dockerfile:</p>
+<div class="highlight" style="background: #f0f3f3"><pre style="line-height: 125%"><span style="color: #006699; font-weight: bold">FROM</span><span style="color: #CC3300"> python:2.7-slim</span>
+
+<span style="color: #006699; font-weight: bold">RUN</span> pip install gunicorn json-logging-py
+
+COPY logging.conf /logging.conf
+COPY gunicorn.conf /gunicorn.conf
+
+COPY myapp.py /
+
+<span style="color: #006699; font-weight: bold">EXPOSE</span><span style="color: #CC3300"> 8000</span>
+
+<span style="color: #006699; font-weight: bold">ENTRYPOINT</span><span style="color: #CC3300"> [&quot;/usr/local/bin/gunicorn&quot;, &quot;--config&quot;, &quot;/gunicorn.conf&quot;, &quot;--log-config&quot;, &quot;/logging.conf&quot;, &quot;-b&quot;, &quot;:8000&quot;, &quot;myapp:app&quot;]</span>
+</pre></div>
+
+<p>Let&rsquo;s build it</p>
+<div class="highlight" style="background: #f0f3f3"><pre style="line-height: 125%"><span style="color: #000099; font-weight: bold">$</span> docker build -t sebestblog/gunicorn-with-docker .
+</pre></div>
+
+<p>We can now run the Docker image with some Gunicorn parameters</p>
+<div class="highlight" style="background: #f0f3f3"><pre style="line-height: 125%"><span style="color: #000099; font-weight: bold">$</span> docker run -e <span style="color: #003333">GUNICORN_WORKERS</span><span style="color: #555555">=</span><span style="color: #FF6600">4</span> -e <span style="color: #003333">GUNICORN_ACCESSLOG</span><span style="color: #555555">=</span>- -p 8000:8000 sebestblog/gunicorn-with-docker
+</pre></div>
+
+      
+      
+      <div id="share-this" class="col span_10">
+        <span class='st_twitter_large' displayText='Tweet'></span>
+        <span class='st_facebook_large' displayText='Facebook'></span>
+        <span class='st_googleplus_large' displayText='Google +'></span>
+        <span class='st_pocket_large' displayText='Pocket'></span>
+        <span class='st_sharethis_large' displayText='ShareThis'></span>
+        <span class='st_email_large' displayText='Email'></span>  
+      </div>
+    </article>
+    
+ <aside><div id="disqus_thread"></div></aside> 
+
+<script type="text/javascript">
+     
+    var disqus_shortname = 'sebest';
+
+     
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+  </main>
+  
+  <nav class="pagination">
+    
+      <span class="previous">&larr; <a href="https://sebest.github.io/post/using-travis-ci-to-build-docker-images/" rel="prev">Using Travis.ci to build Docker images</a></span>
+    
+    
+  </nav>
+
+
+  
+  <footer role="contentinfo">
+    <div style="text-align:center;">
+      
+      Written by Sébastien Estienne
+    </div>
+  </footer>
+
+
+</div>
+
+<script>
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-68482802-1', 'auto');
+	ga('send', 'pageview');
+</script>
+
+</body>
+</html>
+

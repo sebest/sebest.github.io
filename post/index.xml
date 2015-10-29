@@ -6,8 +6,186 @@
     <description>Recent content in Posts on ☁️  Sebest&#39;s Nuage ☁️</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 23 Oct 2015 10:36:48 +0800</lastBuildDate>
+    <lastBuildDate>Sat, 24 Oct 2015 15:10:01 +0800</lastBuildDate>
     <atom:link href="https://sebest.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>ProTips: using Gunicorn inside a Docker image</title>
+      <link>https://sebest.github.io/post/protips-using-gunicorn-inside-a-docker-image/</link>
+      <pubDate>Sat, 24 Oct 2015 15:10:01 +0800</pubDate>
+      
+      <guid>https://sebest.github.io/post/protips-using-gunicorn-inside-a-docker-image/</guid>
+      <description>
+
+&lt;p&gt;In this post i will describe how i use &lt;a href=&#34;http://gunicorn.org/&#34;&gt;Gunicorn&lt;/a&gt; inside Docker. We will specifically see how to configure Gunicorn and how to configure the logger to work nicely with Docker.&lt;/p&gt;
+
+&lt;p&gt;We will use the following Python WSGI app in our examples as &lt;strong&gt;myapp.py&lt;/strong&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;import&lt;/span&gt; &lt;span style=&#34;color: #00CCFF; font-weight: bold&#34;&gt;logging&lt;/span&gt;
+
+logger &lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt; logging&lt;span style=&#34;color: #555555&#34;&gt;.&lt;/span&gt;getLogger(__name__)
+
+&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color: #CC00FF&#34;&gt;app&lt;/span&gt;(environ, start_response):
+    path &lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt; environ&lt;span style=&#34;color: #555555&#34;&gt;.&lt;/span&gt;get(&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;#39;PATH_INFO&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;)
+    &lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;if&lt;/span&gt; path &lt;span style=&#34;color: #555555&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;#39;/exception&amp;#39;&lt;/span&gt;:
+        &lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;raise&lt;/span&gt; &lt;span style=&#34;color: #CC0000; font-weight: bold&#34;&gt;Exception&lt;/span&gt;(&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;#39;My exception!&amp;#39;&lt;/span&gt;)
+
+    data &lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;Request on &lt;/span&gt;&lt;span style=&#34;color: #AA0000&#34;&gt;%s&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt; &lt;/span&gt;&lt;span style=&#34;color: #CC3300; font-weight: bold&#34;&gt;\n&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;&lt;/span&gt; &lt;span style=&#34;color: #555555&#34;&gt;%&lt;/span&gt; path
+    logger&lt;span style=&#34;color: #555555&#34;&gt;.&lt;/span&gt;info(data, extra&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;{&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;#39;tags&amp;#39;&lt;/span&gt;: [&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;#39;role:web&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;#39;env:prod&amp;#39;&lt;/span&gt;]})
+    start_response(&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;200 OK&amp;quot;&lt;/span&gt;, [
+          (&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;Content-Type&amp;quot;&lt;/span&gt;, &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;text/plain&amp;quot;&lt;/span&gt;),
+          (&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;Content-Length&amp;quot;&lt;/span&gt;, &lt;span style=&#34;color: #336666&#34;&gt;str&lt;/span&gt;(&lt;span style=&#34;color: #336666&#34;&gt;len&lt;/span&gt;(data)))
+      ])
+    &lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color: #336666&#34;&gt;iter&lt;/span&gt;([data])
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;h2 id=&#34;configuring-gunicorn:dfe07d0fde6b925b72e49a7b67d35d2c&#34;&gt;Configuring Gunicorn&lt;/h2&gt;
+
+&lt;p&gt;The best way to configure a Docker Container is using environment variables, Gunicorn does not natively support this. Gunicorn supports a &lt;a href=&#34;http://docs.gunicorn.org/en/latest/configure.html#configuration-file&#34;&gt;configuration file&lt;/a&gt; that can contain Python code, we will use this feature to be able to pass environment variables to configure it.&lt;/p&gt;
+
+&lt;p&gt;We create a file named &lt;strong&gt;gunicorn.conf&lt;/strong&gt; with the following content:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;import&lt;/span&gt; &lt;span style=&#34;color: #00CCFF; font-weight: bold&#34;&gt;os&lt;/span&gt;
+
+&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;for&lt;/span&gt; k,v &lt;span style=&#34;color: #000000; font-weight: bold&#34;&gt;in&lt;/span&gt; os&lt;span style=&#34;color: #555555&#34;&gt;.&lt;/span&gt;environ&lt;span style=&#34;color: #555555&#34;&gt;.&lt;/span&gt;items():
+    &lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;if&lt;/span&gt; k&lt;span style=&#34;color: #555555&#34;&gt;.&lt;/span&gt;startswith(&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;GUNICORN_&amp;quot;&lt;/span&gt;):
+        key &lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt; k&lt;span style=&#34;color: #555555&#34;&gt;.&lt;/span&gt;split(&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;#39;_&amp;#39;&lt;/span&gt;, &lt;span style=&#34;color: #FF6600&#34;&gt;1&lt;/span&gt;)[&lt;span style=&#34;color: #FF6600&#34;&gt;1&lt;/span&gt;]&lt;span style=&#34;color: #555555&#34;&gt;.&lt;/span&gt;lower()
+        &lt;span style=&#34;color: #336666&#34;&gt;locals&lt;/span&gt;()[key] &lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt; v
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;This code will iterate over all environment variables and find those starting by &lt;strong&gt;GUNICORN_&lt;/strong&gt; and set a local variable with the remaining part, lowercased: &lt;strong&gt;GUNICORN_MY_PARAMETER=42&lt;/strong&gt; will create a variable named &lt;strong&gt;my_parameter&lt;/strong&gt; with &amp;lsquo;42&amp;rsquo; as the value.&lt;/p&gt;
+
+&lt;p&gt;We are now able to pass any parameter from this &lt;a href=&#34;http://docs.gunicorn.org/en/latest/settings.html&#34;&gt;list&lt;/a&gt; by prefixing them with GUNICORN_ and uppercasing the parameter name.&lt;/p&gt;
+
+&lt;p&gt;Examples:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;The number of Gunicorn workers: GUNICORN_WORKERS=5&lt;/li&gt;
+&lt;li&gt;The backlog: GUNICORN_BACKLOG=4096&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;We can test it by starting Gunicorn like this:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; &lt;span style=&#34;color: #336666&#34;&gt;export &lt;/span&gt;&lt;span style=&#34;color: #003333&#34;&gt;GUNICORN_WORKERS&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;2
+&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; &lt;span style=&#34;color: #336666&#34;&gt;export &lt;/span&gt;&lt;span style=&#34;color: #003333&#34;&gt;GUNICORN_BACKLOG&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;4096
+&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; &lt;span style=&#34;color: #336666&#34;&gt;export &lt;/span&gt;&lt;span style=&#34;color: #003333&#34;&gt;GUNICORN_BIND&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;0.0.0.0:8080
+&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; gunicorn --config gunicorn.conf myapp:app
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;[2015-10-29 11:39:34 +0800] [27229] [INFO] Starting gunicorn 19.3.0&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;[2015-10-29 11:39:34 +0800] [27229] [INFO] Listening at: http://0.0.0.0:8080 (27229)&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;[2015-10-29 11:39:34 +0800] [27229] [INFO] Using worker: sync&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;[2015-10-29 11:39:34 +0800] [27232] [INFO] Booting worker with pid: 27232&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;[2015-10-29 11:39:34 +0800] [27233] [INFO] Booting worker with pid: 27233&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;h2 id=&#34;setting-up-logging:dfe07d0fde6b925b72e49a7b67d35d2c&#34;&gt;Setting up logging&lt;/h2&gt;
+
+&lt;p&gt;A common way to setup logging in a Docker base architecture is to output the logs on the standard output and configure the Docker Daemon to forward this to Syslog.&lt;/p&gt;
+
+&lt;p&gt;As Python logs can be multilines, this is especially true for exceptions, it is recommended to use a &lt;strong&gt;JSON&lt;/strong&gt; formatter.&lt;/p&gt;
+
+&lt;p&gt;We will use the &lt;a href=&#34;https://pypi.python.org/pypi/json-logging-py/&#34;&gt;json-logging-py&lt;/a&gt; (&lt;a href=&#34;https://github.com/sebest/json-logging-py&#34;&gt;GitHub&lt;/a&gt;) library as our logging formatter.&lt;/p&gt;
+
+&lt;p&gt;Gunicorn can use a configuration file using the Python logging &lt;a href=&#34;https://docs.python.org/2/library/logging.config.html#logging.config.fileConfig&#34;&gt;fileConfig format&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;The following &lt;strong&gt;logging.conf&lt;/strong&gt; file configures the root logger and Gunicorn error logger to output the logs on the standard output using a JSON formatter:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;[loggers]&lt;/span&gt;
+&lt;span style=&#34;color: #330099&#34;&gt;keys&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;root, gunicorn.error&lt;/span&gt;
+
+&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;[handlers]&lt;/span&gt;
+&lt;span style=&#34;color: #330099&#34;&gt;keys&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;console&lt;/span&gt;
+
+&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;[formatters]&lt;/span&gt;
+&lt;span style=&#34;color: #330099&#34;&gt;keys&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;json&lt;/span&gt;
+
+&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;[logger_root]&lt;/span&gt;
+&lt;span style=&#34;color: #330099&#34;&gt;level&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;INFO&lt;/span&gt;
+&lt;span style=&#34;color: #330099&#34;&gt;handlers&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;console&lt;/span&gt;
+
+&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;[logger_gunicorn.error]&lt;/span&gt;
+&lt;span style=&#34;color: #330099&#34;&gt;level&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;ERROR&lt;/span&gt;
+&lt;span style=&#34;color: #330099&#34;&gt;handlers&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;console&lt;/span&gt;
+&lt;span style=&#34;color: #330099&#34;&gt;propagate&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;0&lt;/span&gt;
+&lt;span style=&#34;color: #330099&#34;&gt;qualname&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;gunicorn.error&lt;/span&gt;
+
+&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;[handler_console]&lt;/span&gt;
+&lt;span style=&#34;color: #330099&#34;&gt;class&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;StreamHandler&lt;/span&gt;
+&lt;span style=&#34;color: #330099&#34;&gt;formatter&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;json&lt;/span&gt;
+&lt;span style=&#34;color: #330099&#34;&gt;args&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;(sys.stdout, )&lt;/span&gt;
+
+&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;[formatter_json]&lt;/span&gt;
+&lt;span style=&#34;color: #330099&#34;&gt;class&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;jsonlogging.JSONFormatter&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;We can test it by starting Gunicorn like this:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; gunicorn --log-config logging.conf myapp:app
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;em&gt;Note:&lt;/em&gt; I will &amp;lsquo;pretty print&amp;rsquo; the JSON output for readability but the real output is on a single line.&lt;/p&gt;
+
+&lt;p&gt;If we do a request on &lt;strong&gt;&lt;a href=&#34;http://127.0.0.1:8000/path&#34;&gt;http://127.0.0.1:8000/path&lt;/a&gt;&lt;/strong&gt; we have the following output:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;{
+    &lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;quot;host&amp;quot;&lt;/span&gt;: &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;silicon.local&amp;quot;&lt;/span&gt;,
+    &lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;quot;level&amp;quot;&lt;/span&gt;: &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;INFO&amp;quot;&lt;/span&gt;,
+    &lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;quot;logger&amp;quot;&lt;/span&gt;: &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;myapp&amp;quot;&lt;/span&gt;,
+    &lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;quot;message&amp;quot;&lt;/span&gt;: &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;Request on /path \n&amp;quot;&lt;/span&gt;,
+    &lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;quot;path&amp;quot;&lt;/span&gt;: &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;/Users/sebest/work/blog-demo/gunicorn-with-docker/myapp.py&amp;quot;&lt;/span&gt;,
+    &lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;quot;tags&amp;quot;&lt;/span&gt;: [
+        &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;role:web&amp;quot;&lt;/span&gt;,
+        &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;env:prod&amp;quot;&lt;/span&gt;
+    ],
+    &lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;quot;timestamp&amp;quot;&lt;/span&gt;: &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;2015-10-29T03:41:41.589027Z&amp;quot;&lt;/span&gt;
+}
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Now let&amp;rsquo;s try to request &lt;strong&gt;&lt;a href=&#34;http://127.0.0.1:8000/exception&#34;&gt;http://127.0.0.1:8000/exception&lt;/a&gt;&lt;/strong&gt; to generate an Exception:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;{
+    &lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;quot;exc_info&amp;quot;&lt;/span&gt;: &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;Traceback (most recent call last):\n  File \&amp;quot;/Users/sebest/.virtualenvs/pxlapi/lib/python2.7/site-packages/gunicorn/workers/sync.py\&amp;quot;, line 130, in handle\n    self.handle_request(listener, req, client, addr)\n  File \&amp;quot;/Users/sebest/.virtualenvs/pxlapi/lib/python2.7/site-packages/gunicorn/workers/sync.py\&amp;quot;, line 171, in handle_request\n    respiter = self.wsgi(environ, resp.start_response)\n  File \&amp;quot;/Users/sebest/work/blog-demo/gunicorn-with-docker/myapp.py\&amp;quot;, line 10, in app\n    raise Exception(&amp;#39;My exception!&amp;#39;)\nException: My exception!\n&amp;quot;&lt;/span&gt;,
+    &lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;quot;filename&amp;quot;&lt;/span&gt;: &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;glogging.py&amp;quot;&lt;/span&gt;,
+    &lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;quot;host&amp;quot;&lt;/span&gt;: &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;silicon.local&amp;quot;&lt;/span&gt;,
+    &lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;quot;level&amp;quot;&lt;/span&gt;: &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;ERROR&amp;quot;&lt;/span&gt;,
+    &lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;quot;lineno&amp;quot;&lt;/span&gt;: &lt;span style=&#34;color: #FF6600&#34;&gt;228&lt;/span&gt;,
+    &lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;quot;logger&amp;quot;&lt;/span&gt;: &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;gunicorn.error&amp;quot;&lt;/span&gt;,
+    &lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;quot;message&amp;quot;&lt;/span&gt;: &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;Error handling request&amp;quot;&lt;/span&gt;,
+    &lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;quot;path&amp;quot;&lt;/span&gt;: &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;/Users/sebest/.virtualenvs/pxlapi/lib/python2.7/site-packages/gunicorn/glogging.py&amp;quot;&lt;/span&gt;,
+    &lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;quot;tags&amp;quot;&lt;/span&gt;: [],
+    &lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;quot;timestamp&amp;quot;&lt;/span&gt;: &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;2015-10-29T03:46:02.349887Z&amp;quot;&lt;/span&gt;
+}
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;We can see the Python traceback in the &lt;strong&gt;exec_info&lt;/strong&gt; key of the JSON output:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #99CC66&#34;&gt;Traceback (most recent call last):&lt;/span&gt;
+  File &lt;span style=&#34;color: #336666&#34;&gt;&amp;quot;/Users/sebest/.virtualenvs/pxlapi/lib/python2.7/site-packages/gunicorn/workers/sync.py&amp;quot;&lt;/span&gt;, line &lt;span style=&#34;color: #FF6600&#34;&gt;130&lt;/span&gt;, in handle
+    &lt;span style=&#34;color: #336666&#34;&gt;self&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;.&lt;/span&gt;handle_request(listener, req, client, addr)
+  File &lt;span style=&#34;color: #336666&#34;&gt;&amp;quot;/Users/sebest/.virtualenvs/pxlapi/lib/python2.7/site-packages/gunicorn/workers/sync.py&amp;quot;&lt;/span&gt;, line &lt;span style=&#34;color: #FF6600&#34;&gt;171&lt;/span&gt;, in handle_request
+    respiter &lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color: #336666&#34;&gt;self&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;.&lt;/span&gt;wsgi(environ, resp&lt;span style=&#34;color: #555555&#34;&gt;.&lt;/span&gt;start_response)
+  File &lt;span style=&#34;color: #336666&#34;&gt;&amp;quot;/Users/sebest/work/blog-demo/gunicorn-with-docker/myapp.py&amp;quot;&lt;/span&gt;, line &lt;span style=&#34;color: #FF6600&#34;&gt;10&lt;/span&gt;, in app
+    &lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;raise&lt;/span&gt; &lt;span style=&#34;color: #CC0000; font-weight: bold&#34;&gt;Exception&lt;/span&gt;(&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;#39;My exception!&amp;#39;&lt;/span&gt;)
+&lt;span style=&#34;color: #FF0000&#34;&gt;Exception&lt;/span&gt;: My exception!
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;h2 id=&#34;wrapping-all-of-this-together-in-a-docker-image:dfe07d0fde6b925b72e49a7b67d35d2c&#34;&gt;Wrapping all of this together in a Docker image&lt;/h2&gt;
+
+&lt;p&gt;We use the following Dockerfile:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;FROM&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt; python:2.7-slim&lt;/span&gt;
+
+&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;RUN&lt;/span&gt; pip install gunicorn json-logging-py
+
+COPY logging.conf /logging.conf
+COPY gunicorn.conf /gunicorn.conf
+
+COPY myapp.py /
+
+&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;EXPOSE&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt; 8000&lt;/span&gt;
+
+&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;ENTRYPOINT&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt; [&amp;quot;/usr/local/bin/gunicorn&amp;quot;, &amp;quot;--config&amp;quot;, &amp;quot;/gunicorn.conf&amp;quot;, &amp;quot;--log-config&amp;quot;, &amp;quot;/logging.conf&amp;quot;, &amp;quot;-b&amp;quot;, &amp;quot;:8000&amp;quot;, &amp;quot;myapp:app&amp;quot;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Let&amp;rsquo;s build it&lt;/p&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; docker build -t sebestblog/gunicorn-with-docker .
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;We can now run the Docker image with some Gunicorn parameters&lt;/p&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; docker run -e &lt;span style=&#34;color: #003333&#34;&gt;GUNICORN_WORKERS&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color: #FF6600&#34;&gt;4&lt;/span&gt; -e &lt;span style=&#34;color: #003333&#34;&gt;GUNICORN_ACCESSLOG&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;- -p 8000:8000 sebestblog/gunicorn-with-docker
+&lt;/pre&gt;&lt;/div&gt;
+</description>
+    </item>
     
     <item>
       <title>Using Travis.ci to build Docker images</title>
