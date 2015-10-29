@@ -19,7 +19,6 @@
   
   <link rel="stylesheet" href="/css/sanitize.css">
   <link rel="stylesheet" href="/css/responsive.css">
-  <link rel="stylesheet" href="/css/highlight_monokai.css">
   <link rel="stylesheet" href="/css/theme.css">
   <link rel="stylesheet" href="/css/custom.css">
   
@@ -73,16 +72,17 @@
 
 <p>Imagine you are using keepalived + haproxy on your loadbalancers in active/active mode.</p>
 
-<p>You have 2 vips one is on the first load balancerm the other on the second. Now in your haproxy.cfg you have to bind these ips, the probem is that one of the vips is not on the current loadbalancer, so haproxy will refuse to start with the following error: <i>Starting proxy appli1-rewrite: cannot bind socket</i>.</p>
+<p>You have 2 virtual IPs one is on the first load balancer and the other is on the second.</p>
+
+<p>Now in your haproxy.cfg you have to bind these IPs, the probem is that one of the virtual IPs is not on the current loadbalancer, so haproxy will refuse to start with the following error: <i>Starting proxy appli1-rewrite: cannot bind socket</i>.</p>
 
 <p>The common solution is to listen on <i>0.0.0.0</i>, but it not always practical on wanted, especially if you want to have another server using the same port but on another ip, or if you only want to listen on internal interfaces.</p>
 
-<p>The solution is a sysctl, that will allow any software to bind any ip even if it&rsquo;s not up yet:</p>
+<p>The solution is a <strong>sysctl</strong> that will allow any software to bind an IP even if it&rsquo;s not up yet:</p>
+<div class="highlight" style="background: #f0f3f3"><pre style="line-height: 125%">sysctl -w net.ipv4.ip_nonlocal_bind=1
+</pre></div>
 
-<pre><code>sysctl -w net.ipv4.ip_nonlocal_bind=1
-</code></pre>
-
-<p>You should put this in <strong>/etc/sysctl.conf</strong> to make it permanent.</p>
+<p>You should put this in <strong>/etc/sysctl.conf</strong> to make this change permanent.</p>
 
       
       
@@ -133,9 +133,6 @@
 
 
 </div>
-
-<script src="/js/highlight.pack.js"></script>
-<script>hljs.initHighlightingOnLoad();</script>
 
 <script>
 	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){

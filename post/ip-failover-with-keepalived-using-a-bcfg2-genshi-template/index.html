@@ -19,7 +19,6 @@
   
   <link rel="stylesheet" href="/css/sanitize.css">
   <link rel="stylesheet" href="/css/responsive.css">
-  <link rel="stylesheet" href="/css/highlight_monokai.css">
   <link rel="stylesheet" href="/css/theme.css">
   <link rel="stylesheet" href="/css/custom.css">
   
@@ -77,65 +76,62 @@ Keepalived implemented the <a href="http://en.wikipedia.org/wiki/Virtual_Router_
 <p>This plugin allows you to define your custom XML config file and then use its content in your template.</p>
 
 <p>Here is my <b>/etc/bcfg2/Properties/vips.xml</b></p>
-
-<pre><code>&lt;vips&gt;
-  &lt;group name=&quot;axel&quot;&gt;
-    &lt;vip iface=&quot;eth0&quot; vid=&quot;10&quot; ip=&quot;10.201.4.101&quot; netmask=&quot;16&quot; broadcast=&quot;10.201.255.255&quot; password=&quot;mypass1&quot;&gt;
-      &lt;host name=&quot;axel-01&quot; master=&quot;yes&quot;/&gt;
-      &lt;host name=&quot;axel-02&quot; master=&quot;no&quot;/&gt;
-    &lt;/vip&gt;
-    &lt;vip iface=&quot;vlan501&quot; vid=&quot;11&quot; ip=&quot;42.42.121.111&quot; netmask&quot;26&quot; broadcast=&quot;42.42.121.127&quot; password=&quot;mypass2&quot;&gt;
-      &lt;host name=&quot;axel-01&quot; master=&quot;yes&quot;/&gt;
-      &lt;host name=&quot;axel-02&quot; master=&quot;no&quot;/&gt;
-    &lt;/vip&gt;
-    &lt;vip iface=&quot;vlan501&quot; vid=&quot;12&quot; ip=&quot;42.42.121.112&quot; netmask=&quot;26&quot; broadcast=&quot;42.42.121.127&quot; password=&quot;mypass3&quot;&gt;
-      &lt;host name=&quot;axel-01&quot; master=&quot;no&quot;/&gt;
-      &lt;host name=&quot;axel-02&quot; master=&quot;yes&quot;/&gt;
-    &lt;/vip&gt;
-  &lt;/group&gt;
-&lt;/vips&gt;
-</code></pre>
+<div class="highlight" style="background: #f0f3f3"><pre style="line-height: 125%"><span style="color: #330099; font-weight: bold">&lt;vips&gt;</span>
+  <span style="color: #330099; font-weight: bold">&lt;group</span> <span style="color: #330099">name=</span><span style="color: #CC3300">&quot;axel&quot;</span><span style="color: #330099; font-weight: bold">&gt;</span>
+    <span style="color: #330099; font-weight: bold">&lt;vip</span> <span style="color: #330099">iface=</span><span style="color: #CC3300">&quot;eth0&quot;</span> <span style="color: #330099">vid=</span><span style="color: #CC3300">&quot;10&quot;</span> <span style="color: #330099">ip=</span><span style="color: #CC3300">&quot;10.201.4.101&quot;</span> <span style="color: #330099">netmask=</span><span style="color: #CC3300">&quot;16&quot;</span> <span style="color: #330099">broadcast=</span><span style="color: #CC3300">&quot;10.201.255.255&quot;</span> <span style="color: #330099">password=</span><span style="color: #CC3300">&quot;mypass1&quot;</span><span style="color: #330099; font-weight: bold">&gt;</span>
+      <span style="color: #330099; font-weight: bold">&lt;host</span> <span style="color: #330099">name=</span><span style="color: #CC3300">&quot;axel-01&quot;</span> <span style="color: #330099">master=</span><span style="color: #CC3300">&quot;yes&quot;</span><span style="color: #330099; font-weight: bold">/&gt;</span>
+      <span style="color: #330099; font-weight: bold">&lt;host</span> <span style="color: #330099">name=</span><span style="color: #CC3300">&quot;axel-02&quot;</span> <span style="color: #330099">master=</span><span style="color: #CC3300">&quot;no&quot;</span><span style="color: #330099; font-weight: bold">/&gt;</span>
+    <span style="color: #330099; font-weight: bold">&lt;/vip&gt;</span>
+    <span style="color: #330099; font-weight: bold">&lt;vip</span> <span style="color: #330099">iface=</span><span style="color: #CC3300">&quot;vlan501&quot;</span> <span style="color: #330099">vid=</span><span style="color: #CC3300">&quot;11&quot;</span> <span style="color: #330099">ip=</span><span style="color: #CC3300">&quot;42.42.121.111&quot;</span> <span style="color: #AA0000; background-color: #FFAAAA">netmask&quot;26&quot;</span> <span style="color: #330099">broadcast=</span><span style="color: #CC3300">&quot;42.42.121.127&quot;</span> <span style="color: #330099">password=</span><span style="color: #CC3300">&quot;mypass2&quot;</span><span style="color: #330099; font-weight: bold">&gt;</span>
+      <span style="color: #330099; font-weight: bold">&lt;host</span> <span style="color: #330099">name=</span><span style="color: #CC3300">&quot;axel-01&quot;</span> <span style="color: #330099">master=</span><span style="color: #CC3300">&quot;yes&quot;</span><span style="color: #330099; font-weight: bold">/&gt;</span>
+      <span style="color: #330099; font-weight: bold">&lt;host</span> <span style="color: #330099">name=</span><span style="color: #CC3300">&quot;axel-02&quot;</span> <span style="color: #330099">master=</span><span style="color: #CC3300">&quot;no&quot;</span><span style="color: #330099; font-weight: bold">/&gt;</span>
+    <span style="color: #330099; font-weight: bold">&lt;/vip&gt;</span>
+    <span style="color: #330099; font-weight: bold">&lt;vip</span> <span style="color: #330099">iface=</span><span style="color: #CC3300">&quot;vlan501&quot;</span> <span style="color: #330099">vid=</span><span style="color: #CC3300">&quot;12&quot;</span> <span style="color: #330099">ip=</span><span style="color: #CC3300">&quot;42.42.121.112&quot;</span> <span style="color: #330099">netmask=</span><span style="color: #CC3300">&quot;26&quot;</span> <span style="color: #330099">broadcast=</span><span style="color: #CC3300">&quot;42.42.121.127&quot;</span> <span style="color: #330099">password=</span><span style="color: #CC3300">&quot;mypass3&quot;</span><span style="color: #330099; font-weight: bold">&gt;</span>
+      <span style="color: #330099; font-weight: bold">&lt;host</span> <span style="color: #330099">name=</span><span style="color: #CC3300">&quot;axel-01&quot;</span> <span style="color: #330099">master=</span><span style="color: #CC3300">&quot;no&quot;</span><span style="color: #330099; font-weight: bold">/&gt;</span>
+      <span style="color: #330099; font-weight: bold">&lt;host</span> <span style="color: #330099">name=</span><span style="color: #CC3300">&quot;axel-02&quot;</span> <span style="color: #330099">master=</span><span style="color: #CC3300">&quot;yes&quot;</span><span style="color: #330099; font-weight: bold">/&gt;</span>
+    <span style="color: #330099; font-weight: bold">&lt;/vip&gt;</span>
+  <span style="color: #330099; font-weight: bold">&lt;/group&gt;</span>
+<span style="color: #330099; font-weight: bold">&lt;/vips&gt;</span>
+</pre></div>
 
 <p>Now the template <b>/etc/bcfg2/TGenshi/keepalived/keepalived.conf/template.newtxt</b></p>
-
-<pre><code>{% python
+<div class="highlight" style="background: #f0f3f3"><pre style="line-height: 125%">{% python
 vips = []
 
 try:
-    hostname = list(metadata.aliases)[0].split('.',1)[0]
-    for vip_info in metadata.Properties['vips.xml'].data.find(&quot;.//group[@name='%s']&quot; % (hostname.split('-')[0])):
+    hostname = list(metadata.aliases)[0].split(&#39;.&#39;,1)[0]
+    for vip_info in metadata.Properties[&#39;vips.xml&#39;].data.find(&quot;.//group[@name=&#39;%s&#39;]&quot; % (hostname.split(&#39;-&#39;)[0])):
         vip = vip_info.attrib
         print vip
         for host_info in vip_info:
-            if host_info.attrib['name'] == hostname:
-               vip.update({'state' : host_info.attrib['master'] == 'yes' and 'MASTER' or 'BACKUP' })
+            if host_info.attrib[&#39;name&#39;] == hostname:
+               vip.update({&#39;state&#39; : host_info.attrib[&#39;master&#39;] == &#39;yes&#39; and &#39;MASTER&#39; or &#39;BACKUP&#39; })
                vips.append(vip)
 except:
     pass
 %}\
-# ${hostname}
+# <span style="color: #009999">${</span>hostname<span style="color: #009999">}</span>
 
 {% for index, vip in enumerate(vips) %}\
-vrrp_instance VI_${index} {
-    state ${vip['state']}
-    interface ${vip['iface']}
-    virtual_router_id ${vip['vid']}
+vrrp_instance VI_<span style="color: #009999">${</span>index<span style="color: #009999">}</span> {
+    state <span style="color: #009999">${</span>vip[<span style="color: #CC3300">&#39;state&#39;</span>]<span style="color: #009999">}</span>
+    interface <span style="color: #009999">${</span>vip[<span style="color: #CC3300">&#39;iface&#39;</span>]<span style="color: #009999">}</span>
+    virtual_router_id <span style="color: #009999">${</span>vip[<span style="color: #CC3300">&#39;vid&#39;</span>]<span style="color: #009999">}</span>
     priority 100
     authentication {
         auth_type PASS
-        auth_pass ${vip['password']}
+        auth_pass <span style="color: #009999">${</span>vip[<span style="color: #CC3300">&#39;password&#39;</span>]<span style="color: #009999">}</span>
     }
 
     virtual_ipaddress {
-        ${vip['ip']}/${vip['netmask']} brd ${vip['broadcast']} dev ${vip['iface']}
+        <span style="color: #009999">${</span>vip[<span style="color: #CC3300">&#39;ip&#39;</span>]<span style="color: #009999">}</span>/<span style="color: #009999">${</span>vip[<span style="color: #CC3300">&#39;netmask&#39;</span>]<span style="color: #009999">}</span> brd <span style="color: #009999">${</span>vip[<span style="color: #CC3300">&#39;broadcast&#39;</span>]<span style="color: #009999">}</span> dev <span style="color: #009999">${</span>vip[<span style="color: #CC3300">&#39;iface&#39;</span>]<span style="color: #009999">}</span>
     }
 }
 {% end %}
-</code></pre>
+</pre></div>
 
 <p>This will generate this kind of config file:</p>
-
-<pre><code># axel-01
+<div class="highlight" style="background: #f0f3f3"><pre style="line-height: 125%"># axel-01
 
 vrrp_instance VI_0 {
     state MASTER
@@ -179,7 +175,7 @@ vrrp_instance VI_2 {
         42.42.121.112/26 brd 42.42.121.127 dev vlan501
     }
 }
-</code></pre>
+</pre></div>
 
       
       
@@ -230,9 +226,6 @@ vrrp_instance VI_2 {
 
 
 </div>
-
-<script src="/js/highlight.pack.js"></script>
-<script>hljs.initHighlightingOnLoad();</script>
 
 <script>
 	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){

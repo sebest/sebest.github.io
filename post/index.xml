@@ -28,36 +28,36 @@
 &lt;p&gt;The first step is to store you docker registry credentials in the &lt;strong&gt;.travis.yml&lt;/strong&gt; file. We will store them in some environment variables.&lt;/p&gt;
 
 &lt;p&gt;You can read more about this on Travic.ci website &lt;a href=&#34;http://docs.travis-ci.com/user/environment-variables/#Encrypting-Variables-Using-a-Public-Key&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ travis encrypt DOCKER_EMAIL=email@gmail.com
-$ travis encrypt DOCKER_USERNAME=username
-$ travis encrypt DOCKER_PASS=password
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; travis encrypt &lt;span style=&#34;color: #003333&#34;&gt;DOCKER_EMAIL&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;email@gmail.com
+&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; travis encrypt &lt;span style=&#34;color: #003333&#34;&gt;DOCKER_USERNAME&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;username
+&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; travis encrypt &lt;span style=&#34;color: #003333&#34;&gt;DOCKER_PASS&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;password
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;And then store the secure version in your &lt;strong&gt;.travis.yml&lt;/strong&gt; file.&lt;/p&gt;
 
 &lt;p&gt;We will add a comment on the line to help us remember which line contains which environment variable.&lt;/p&gt;
 
 &lt;p&gt;We will also add an environment variable containing the 8 first characters of the git commit hash.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;env:
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;env:
   global:
-    - secure: &amp;quot;UkF2CHX0lUZ...VI/LE=&amp;quot; # DOCKER_EMAIL
-    - secure: &amp;quot;Z3fdBNPt5hR...VI/LE=&amp;quot; # DOCKER_UERNAME
-    - secure: &amp;quot;F4XbD6WybHC...VI/LE=&amp;quot; # DOCKER_PASS
+    - secure: &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;UkF2CHX0lUZ...VI/LE=&amp;quot;&lt;/span&gt; &lt;span style=&#34;color: #0099FF; font-style: italic&#34;&gt;# DOCKER_EMAIL&lt;/span&gt;
+    - secure: &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;Z3fdBNPt5hR...VI/LE=&amp;quot;&lt;/span&gt; &lt;span style=&#34;color: #0099FF; font-style: italic&#34;&gt;# DOCKER_UERNAME&lt;/span&gt;
+    - secure: &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;F4XbD6WybHC...VI/LE=&amp;quot;&lt;/span&gt; &lt;span style=&#34;color: #0099FF; font-style: italic&#34;&gt;# DOCKER_PASS&lt;/span&gt;
     - COMMIT=${TRAVIS_COMMIT::8}
-&lt;/code&gt;&lt;/pre&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;In the &lt;strong&gt;after_success&lt;/strong&gt; section of the &lt;strong&gt;.travis.yml&lt;/strong&gt; file, we log on Docker Hub registry, then we build the image.&lt;/p&gt;
 
-&lt;p&gt;We also tag the generated image with:
- * the short git commit hash
- * the travis build number
- * &lt;strong&gt;latest&lt;/strong&gt; if it is the &lt;strong&gt;master&lt;/strong&gt; branch, otherwise the name of the branch&lt;/p&gt;
+&lt;p&gt;We also tag the generated image with:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;the short git commit hash&lt;/li&gt;
+&lt;li&gt;the travis build number&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;latest&lt;/strong&gt; if it is the &lt;strong&gt;master&lt;/strong&gt; branch, otherwise the name of the branch&lt;/li&gt;
+&lt;/ul&gt;
 
 &lt;p&gt;And finally we push it on the Docker Hub registry&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;after_success:
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;after_success:
   - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
   - export REPO=pixelle/pxladsrv
   - export TAG=`if [ &amp;quot;$TRAVIS_BRANCH&amp;quot; == &amp;quot;master&amp;quot; ]; then echo &amp;quot;latest&amp;quot;; else echo $TRAVIS_BRANCH ; fi`
@@ -65,15 +65,14 @@ $ travis encrypt DOCKER_PASS=password
   - docker tag $REPO:$COMMIT $REPO:$TAG
   - docker tag $REPO:$COMMIT $REPO:travis-$TRAVIS_BUILD_NUMBER
   - docker push $REPO
-&lt;/code&gt;&lt;/pre&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;An alternative solution is to use Rocker that we presented in a precedent &lt;a href=&#34;https://sebest.github.io/post/using-rocker-to-build-minimal-python-docker-images/&#34;&gt;post&lt;/a&gt;.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;after_success:
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;after_success:
   - curl -O -L https://github.com/grammarly/rocker/releases/download/0.2.2/rocker-0.2.2_linux_amd64.tar.gz
   - tar xvfz rocker-0.2.2_linux_amd64.tar.gz
   - ./rocker build --auth $DOCKER_USER:$DOCKER_PASS --push -var TRAVIS_BUILD_NUMBER=$TRAVIS_BUILD_NUMBER -var COMMIT=$COMMIT
-&lt;/code&gt;&lt;/pre&gt;
+&lt;/pre&gt;&lt;/div&gt;
 </description>
     </item>
     
@@ -87,9 +86,9 @@ $ travis encrypt DOCKER_PASS=password
 
 &lt;p&gt;&lt;a href=&#34;https://github.com/grammarly/rocker&#34;&gt;Rocker&lt;/a&gt; is a tool developed by &lt;a href=&#34;http://tech.grammarly.com/blog/posts/Making-Docker-Rock-at-Grammarly.html&#34;&gt;Grammarly&lt;/a&gt; that is offering additional functionalities to build Docker images.&lt;/p&gt;
 
-&lt;p&gt;The syntax of the Rockerfiles is a superset of Dockerfiles.&lt;/p&gt;
+&lt;p&gt;The syntax of the Rockerfiles is a &lt;strong&gt;superset&lt;/strong&gt; of Dockerfiles.&lt;/p&gt;
 
-&lt;p&gt;Rocker is useful for creating minimal/small Docker images as you can split the process in 2 steps, the first to build your project in a first container and the second to ship and run. In the following part of this post we will further explain and show how we can use Rocker to easily generate Docker images for Python projects.&lt;/p&gt;
+&lt;p&gt;Rocker is useful for creating minimal Docker images as you can split the process in 2 steps, the first to build your project in a first container and the second to ship and run. In the following part of this post we will further explain and show how we can use Rocker to easily generate Docker images for Python projects.&lt;/p&gt;
 
 &lt;p&gt;In the first container, we will install all the tools to generate the &lt;a href=&#34;http://pythonwheels.com/&#34;&gt;Python wheels&lt;/a&gt; like a C compiler and all the development headers and libraries. The second container will only hold the installed wheels and dynamic libraries.&lt;/p&gt;
 
@@ -98,95 +97,83 @@ $ travis encrypt DOCKER_PASS=password
 &lt;p&gt;If you are already familiar with Dockerfiles, then moving to Rockerfile is really straightforward. The first step is to create a file named &lt;strong&gt;Dockerfile&lt;/strong&gt; at the root of your project.&lt;/p&gt;
 
 &lt;p&gt;You can see the full repository &lt;a href=&#34;https://github.com/sebest-blog/create-a-small-docker-image-for-a-golang-binary&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;FROM python:2.7-slim
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;FROM&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt; python:2.7-slim&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;The begining of each step is defined by the &lt;strong&gt;FROM&lt;/strong&gt; lines.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;ADD . /src
-WORKDIR /src
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;ADD&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt; . /src&lt;/span&gt;
+&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;WORKDIR&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt; /src&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;This is pretty standard Dockerfile syntax where we copy the sources of the project into a subfolder of the image.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;RUN apt-get update &amp;amp;&amp;amp; apt-get install -y \
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;RUN&lt;/span&gt; apt-get update &lt;span style=&#34;color: #555555&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; apt-get install -y &lt;span style=&#34;color: #CC3300; font-weight: bold&#34;&gt;\&lt;/span&gt;
     build-essential
-&lt;/code&gt;&lt;/pre&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;We install the &lt;strong&gt;build-essential&lt;/strong&gt; package to be able to build Python packages having C dependencies.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;REQUIRE [&amp;quot;Version&amp;quot;]
-RUN sed -ie s/\&#39;0.0\&#39;/\&#39;{{ .Version }}\&#39;/g setup.py
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;REQUIRE &lt;span style=&#34;color: #555555&#34;&gt;[&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;Version&amp;quot;&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;]&lt;/span&gt;
+&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;RUN&lt;/span&gt; sed -ie s/&lt;span style=&#34;color: #CC3300; font-weight: bold&#34;&gt;\&amp;#39;&lt;/span&gt;0.0&lt;span style=&#34;color: #CC3300; font-weight: bold&#34;&gt;\&amp;#39;&lt;/span&gt;/&lt;span style=&#34;color: #CC3300; font-weight: bold&#34;&gt;\&amp;#39;&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;{{&lt;/span&gt; .Version &lt;span style=&#34;color: #555555&#34;&gt;}}&lt;/span&gt;&lt;span style=&#34;color: #CC3300; font-weight: bold&#34;&gt;\&amp;#39;&lt;/span&gt;/g setup.py
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;Rocker provides a templating functionality that we use to set the version number of our package. This can be really useful if you use a CI and want to use the build number as the version number.&lt;/p&gt;
 
 &lt;p&gt;Here is an excerpt of our setup.py&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;setup(
-    name=&#39;rockerdemo&#39;,
-    version=&#39;0.0&#39;,
-    ...
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;setup(
+    name&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;#39;rockerdemo&amp;#39;&lt;/span&gt;,
+    version&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;#39;0.0&amp;#39;&lt;/span&gt;,
+    &lt;span style=&#34;color: #555555&#34;&gt;...&lt;/span&gt;
 )
-&lt;/code&gt;&lt;/pre&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;To pass the value of &lt;strong&gt;Version&lt;/strong&gt; you will use the &lt;strong&gt;-var&lt;/strong&gt; parameter&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ rocker build -var Version=1.0
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; rocker build -var &lt;span style=&#34;color: #003333&#34;&gt;Version&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;1.0
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;Rocker provides the &lt;strong&gt;-print&lt;/strong&gt; parameter to visualize the Rockerfile after it has been templated.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;RUN python setup.py bdist_wheel
-RUN pip wheel .
-RUN pip wheel setproctitle gunicorn json-logging-py
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;RUN&lt;/span&gt; python setup.py bdist_wheel
+&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;RUN&lt;/span&gt; pip wheel .
+&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;RUN&lt;/span&gt; pip wheel setproctitle gunicorn json-logging-py
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;We build all the wheels that we will need: our main app, its dependencies and the dependencies that we will need to actually run the container like &lt;strong&gt;gunicorn&lt;/strong&gt;.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;EXPORT /src/wheelhouse
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;EXPORT /src/wheelhouse
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;All the wheels are stored in &lt;strong&gt;/src/wheelhouse&lt;/strong&gt;, so we &lt;strong&gt;EXPORT&lt;/strong&gt; this folder to be able to &lt;strong&gt;IMPORT&lt;/strong&gt; it in the next step.&lt;/p&gt;
 
 &lt;h1 id=&#34;second-step-the-container-that-we-will-ship-and-run:3973c3ec19897e2b10e699a49fe418cc&#34;&gt;Second step: The container that we will ship and run&lt;/h1&gt;
-
-&lt;pre&gt;&lt;code&gt;FROM python:2.7-slim
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;FROM&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt; python:2.7-slim&lt;/span&gt;
 
 IMPORT /wheelhouse
 
-RUN pip install --no-index --find-links=file:///wheelhouse rockerdemo setproctitle gunicorn json-logging-py
+&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;RUN&lt;/span&gt; pip install --no-index --find-links&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;file:///wheelhouse rockerdemo setproctitle gunicorn json-logging-py
 
-RUN rm -rf /wheelhouse
-&lt;/code&gt;&lt;/pre&gt;
+&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;RUN&lt;/span&gt; rm -rf /wheelhouse
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;We &lt;strong&gt;IMPORT&lt;/strong&gt; the wheels, install them and remove the &lt;strong&gt;/wheelhouse&lt;/strong&gt; folder.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;COPY docker/logging.conf /logging.conf
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;COPY docker/logging.conf /logging.conf
 
 COPY docker/gunicorn.conf /gunicorn.conf
 
-EXPOSE 8000
+&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;EXPOSE&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt; 8000&lt;/span&gt;
 
-ENTRYPOINT [&amp;quot;/usr/local/bin/gunicorn&amp;quot;, &#39;--name&amp;quot;, &amp;quot;rockerdemo&amp;quot;, &amp;quot;--config&amp;quot;, &amp;quot;/gunicorn.conf&amp;quot;, &amp;quot;--log-config&amp;quot;, &amp;quot;/loggin\
-g.conf&amp;quot;, &amp;quot;-b&amp;quot;, &amp;quot;:8000&amp;quot;, &amp;quot;rockerdemo:app&amp;quot;]
-&lt;/code&gt;&lt;/pre&gt;
+&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;ENTRYPOINT&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt; [&amp;quot;/usr/local/bin/gunicorn&amp;quot;, &amp;#39;--name&amp;quot;, &amp;quot;rockerdemo&amp;quot;, &amp;quot;--config&amp;quot;, &amp;quot;/gunicorn.conf&amp;quot;, &amp;quot;--log-config&amp;quot;, &amp;quot;/loggin\&lt;/span&gt;
+g.conf&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;, &amp;quot;&lt;/span&gt;-b&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;, &amp;quot;&lt;/span&gt;:8000&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;, &amp;quot;&lt;/span&gt;rockerdemo:app&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;This part is pretty standard Dockerfile syntax.&lt;/p&gt;
 
 &lt;h1 id=&#34;building-tagging-and-pushing-the-container:3973c3ec19897e2b10e699a49fe418cc&#34;&gt;Building, tagging and pushing the container&lt;/h1&gt;
-
-&lt;pre&gt;&lt;code&gt;PUSH sebest/rocker-with-python-project:{{ .Version }}
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;PUSH sebest/rocker-with-python-project:&lt;span style=&#34;color: #555555&#34;&gt;{{&lt;/span&gt; .Version &lt;span style=&#34;color: #555555&#34;&gt;}}&lt;/span&gt;
 PUSH sebest/rocker-with-python-project:latest
-&lt;/code&gt;&lt;/pre&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;This part will tag the build and optionaly push it to the Docker registry if you use the &lt;strong&gt;-push&lt;/strong&gt; parameter&lt;/p&gt;
 
 &lt;p&gt;The final step is to actually build the image and push it:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ rocker build -var Version=1.2 -push
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; rocker build -var &lt;span style=&#34;color: #003333&#34;&gt;Version&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;1.2 -push
+&lt;/pre&gt;&lt;/div&gt;
 </description>
     </item>
     
@@ -205,152 +192,141 @@ PUSH sebest/rocker-with-python-project:latest
 &lt;p&gt;All files mentioned in this post are available &lt;a href=&#34;https://github.com/sebest-blog/create-a-small-docker-image-for-a-golang-binary&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
 
 &lt;p&gt;Let&amp;rsquo;s start with a basic Go program:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;package&lt;/span&gt; main
 
-&lt;pre&gt;&lt;code&gt;package main
-
-import (
-        &amp;quot;fmt&amp;quot;
-        &amp;quot;net/http&amp;quot;
-        &amp;quot;time&amp;quot;
+&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;import&lt;/span&gt; (
+        &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;fmt&amp;quot;&lt;/span&gt;
+        &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;net/http&amp;quot;&lt;/span&gt;
+        &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;time&amp;quot;&lt;/span&gt;
 )
 
-func main() {
-        now := time.Now()
-        tz, _ := time.LoadLocation(&amp;quot;Europe/Paris&amp;quot;)
-        parisTime := now.In(tz)
-        fmt.Printf(&amp;quot;Local time: %s\nParis time: %s\n&amp;quot;, now, parisTime)
+&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;func&lt;/span&gt; main() {
+        now &lt;span style=&#34;color: #555555&#34;&gt;:=&lt;/span&gt; time.Now()
+        tz, _ &lt;span style=&#34;color: #555555&#34;&gt;:=&lt;/span&gt; time.LoadLocation(&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;Europe/Paris&amp;quot;&lt;/span&gt;)
+        parisTime &lt;span style=&#34;color: #555555&#34;&gt;:=&lt;/span&gt; now.In(tz)
+        fmt.Printf(&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;Local time: %s\nParis time: %s\n&amp;quot;&lt;/span&gt;, now, parisTime)
 
-        _, err := http.Get(&amp;quot;https://golang.org/&amp;quot;)
-        if err == nil {
-                fmt.Println(&amp;quot;GoLang website is UP&amp;quot;)
-        } else {
-                fmt.Printf(&amp;quot;GoLang website is DOWN\nErr: %s\n&amp;quot;, err.Error())
+        _, err &lt;span style=&#34;color: #555555&#34;&gt;:=&lt;/span&gt; http.Get(&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;https://golang.org/&amp;quot;&lt;/span&gt;)
+        &lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;if&lt;/span&gt; err &lt;span style=&#34;color: #555555&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;nil&lt;/span&gt; {
+                fmt.Println(&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;GoLang website is UP&amp;quot;&lt;/span&gt;)
+        } &lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;else&lt;/span&gt; {
+                fmt.Printf(&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;GoLang website is DOWN\nErr: %s\n&amp;quot;&lt;/span&gt;, err.Error())
         }
 }
-&lt;/code&gt;&lt;/pre&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;&lt;em&gt;Note: This post is written under OSX.&lt;/em&gt;&lt;/p&gt;
 
 &lt;p&gt;Let&amp;rsquo;s compile our binary and check its size.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ go build main.go
-$ ls -lh main
--rwxr-xr-x  1 sebest  staff   6,3M  7 oct 13:38 main
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; go build main.go
+&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; ls -lh main
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;-rwxr-xr-x  1 sebest  staff   6,3M  7 oct 13:38 main&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;The binary is 6.3 MB.&lt;/p&gt;
 
 &lt;p&gt;Now let&amp;rsquo;s create a Docker image using the following Dockerfile:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;FROM&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt; scratch&lt;/span&gt;
+&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;ADD&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt; main /&lt;/span&gt;
+&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;CMD&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt; [&amp;quot;/main&amp;quot;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
-&lt;pre&gt;&lt;code&gt;FROM scratch
-ADD main /
-CMD [&amp;quot;/main&amp;quot;]
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;pre&gt;&lt;code&gt;$ docker build -t demo .
-Sending build context to Docker daemon  6.57 MB
-Step 0 : FROM scratch
- ---&amp;gt;
-Step 1 : ADD main /
- ---&amp;gt; 52f8caa90021
-Removing intermediate container f4b041cde0f6
-Step 2 : CMD /main
- ---&amp;gt; Running in b82368bb2f0a
- ---&amp;gt; c625c39ac16e
-Removing intermediate container b82368bb2f0a
-Successfully built c625c39ac16e
-&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Building the image:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; docker build -t demo .
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;Sending build context to Docker daemon  6.57 MB&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;Step 0 : FROM scratch&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt; ---&amp;gt;&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;Step 1 : ADD main /&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt; ---&amp;gt; 52f8caa90021&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;Removing intermediate container f4b041cde0f6&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;Step 2 : CMD /main&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt; ---&amp;gt; Running in b82368bb2f0a&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt; ---&amp;gt; c625c39ac16e&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;Removing intermediate container b82368bb2f0a&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;Successfully built c625c39ac16e&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;Now let&amp;rsquo;s try to run this image:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ docker run demo
-exec format error
-Error response from daemon: Cannot start container cda57701734998a80a1637e59db64e0737b4cc17d29041f9318b89a29d1af7f3: [8] System error: exec format error
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; docker run demo
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;exec format error&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;Error response from daemon: Cannot start container cda57701734998a80a1637e59db64e0737b4cc17d29041f9318b89a29d1af7f3: [8] System error: exec format error&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;We got an error: [8] System error: exec format error&lt;/p&gt;
 
 &lt;p&gt;The reason is that this binary is an OSX binary and not a Linux binary:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ file main
-main: Mach-O 64-bit executable x86_64
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; file main
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;main: Mach-O 64-bit executable x86_64&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;So let&amp;rsquo;s cross-compile our Go program to a Linux binary.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build main.go
-$ file main
-main: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, not stripped
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; &lt;span style=&#34;color: #003333&#34;&gt;CGO_ENABLED&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color: #FF6600&#34;&gt;0&lt;/span&gt; &lt;span style=&#34;color: #003333&#34;&gt;GOOS&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;linux &lt;span style=&#34;color: #003333&#34;&gt;GOARCH&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;amd64 go build main.go
+&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; file main
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;main: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, not stripped&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;We now have a Linux binary, so let&amp;rsquo;s rebuild our Docker image and run it:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; docker run demo
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;panic: time: missing Location in call to Time.In&lt;/span&gt;
 
-&lt;pre&gt;&lt;code&gt;$ docker run demo
-panic: time: missing Location in call to Time.In
-
-goroutine 1 [running]:
-time.Time.In(0xecda77bef, 0x3d1be4, 0x8732e0, 0x0, 0x0, 0x0, 0x0)
-	/usr/local/Cellar/go/1.5.1/libexec/src/time/time.go:803 +0x85
-main.main()
-	/Users/sebest/work/blog-demo/demo-build-static-golang-binary-and-docker-image/main.go:12 +0x97
-&lt;/code&gt;&lt;/pre&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;goroutine 1 [running]:&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;time.Time.In(0xecda77bef, 0x3d1be4, 0x8732e0, 0x0, 0x0, 0x0, 0x0)&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;	/usr/local/Cellar/go/1.5.1/libexec/src/time/time.go:803 +0x85&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;main.main()&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;	/Users/sebest/work/blog-demo/demo-build-static-golang-binary-and-docker-image/main.go:12 +0x97&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;We now have a different error. The reason is because the scratch image does not have any zoneinfo for timezones. Let&amp;rsquo;s copy the zoneinfo folder from OSX.&lt;/p&gt;
 
 &lt;p&gt;As the scratch image does not contain anything, we don&amp;rsquo;t even have access to mkdir. The workaround here is to create a tar.gz image and use the ADD directive in the Dockerfile.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; tar cfz zoneinfo.tar.gz /usr/share/zoneinfo
+&lt;/pre&gt;&lt;/div&gt;
 
-&lt;pre&gt;&lt;code&gt;$ tar cfz zoneinfo.tar.gz /usr/share/zoneinfo
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;pre&gt;&lt;code&gt;FROM scratch
-ADD zoneinfo.tar.gz /
-ADD main /
-CMD [&amp;quot;/main&amp;quot;]
-&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Updated Dockerfile:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;FROM&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt; scratch&lt;/span&gt;
+&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;ADD&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt; zoneinfo.tar.gz /&lt;/span&gt;
+&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;ADD&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt; main /&lt;/span&gt;
+&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;CMD&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt; [&amp;quot;/main&amp;quot;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;Let&amp;rsquo;s rebuild and try our new Docker image&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ docker build -t demo .
-...
-$ docker run demo
-Local time: 2015-10-07 20:57:48.686910468 +0000 UTC
-Paris time: 2015-10-07 22:57:48.686910468 +0200 CEST
-GoLang website is DOWN
-Err: Get https://golang.org/: x509: failed to load system roots and no roots provided
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; docker build -t demo .
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;...&lt;/span&gt;
+&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; docker run demo
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;Local time: 2015-10-07 20:57:48.686910468 +0000 UTC&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;Paris time: 2015-10-07 22:57:48.686910468 +0200 CEST&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;GoLang website is DOWN&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;Err: Get https://golang.org/: x509: failed to load system roots and no roots provided&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;So now the zoneinfo issue is fixed but we still have an error when doing a HTTPS request. The reason is because the scratch image does not have any SSL CA certificates.&lt;/p&gt;
 
 &lt;p&gt;Let&amp;rsquo;s download the Certificates from &lt;a href=&#34;http://curl.haxx.se/docs/caextract.html&#34;&gt;http://curl.haxx.se/docs/caextract.html&lt;/a&gt;&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;curl -o ca-certificates.crt https://raw.githubusercontent.com/bagder/ca-bundle/master/ca-bundle.crt
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;curl -o ca-certificates.crt https://raw.githubusercontent.com/bagder/ca-bundle/master/ca-bundle.crt
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;Let&amp;rsquo;s fix that:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;FROM scratch
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;FROM scratch
 ADD zoneinfo.tar.gz /
 ADD ca-certificates.crt /etc/ssl/certs/
 ADD main /
 CMD [&amp;quot;/main&amp;quot;]
-&lt;/code&gt;&lt;/pre&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;Let&amp;rsquo;s try with this new Docker image&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ docker build -t demo .
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #003333&#34;&gt;$ &lt;/span&gt;docker build -t demo .
 ...
-$ docker run demo
-Local time: 2015-10-07 21:08:49.834033002 +0000 UTC
-Paris time: 2015-10-07 23:08:49.834033002 +0200 CEST
+&lt;span style=&#34;color: #003333&#34;&gt;$ &lt;/span&gt;docker run demo
+Local &lt;span style=&#34;color: #336666&#34;&gt;time&lt;/span&gt;: 2015-10-07 21:08:49.834033002 +0000 UTC
+Paris &lt;span style=&#34;color: #336666&#34;&gt;time&lt;/span&gt;: 2015-10-07 23:08:49.834033002 +0200 CEST
 GoLang website is UP
-&lt;/code&gt;&lt;/pre&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;Everything works fine now so let&amp;rsquo;s check the size of the Docker image&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ docker images
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #003333&#34;&gt;$ &lt;/span&gt;docker images
 REPOSITORY                TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
-demo                      latest              dfa7313cd338        3 minutes ago       7.075 MB
-&lt;/code&gt;&lt;/pre&gt;
+demo                      latest              dfa7313cd338        &lt;span style=&#34;color: #FF6600&#34;&gt;3&lt;/span&gt; minutes ago       7.075 MB
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;As you can see,  our binary is 6.3MB and the Docker image is less than 7.1MB!&lt;/p&gt;
 
@@ -365,9 +341,8 @@ demo                      latest              dfa7313cd338        3 minutes ago 
       
       <guid>https://sebest.github.io/post/protips-converting-markdown-to-restructuredtext/</guid>
       <description>&lt;p&gt;A quick one-liner, which I recently used to convert a Markdown formatted README to reStructuredText, suitable for posting to PyPI:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;pandoc --from=markdown --to=rst --output=README.rst README.md
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; pandoc --from&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;markdown --to&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;rst --output&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;README.rst README.md
+&lt;/pre&gt;&lt;/div&gt;
 </description>
     </item>
     
@@ -382,18 +357,16 @@ demo                      latest              dfa7313cd338        3 minutes ago 
 &lt;h2 id=&#34;get-the-current-unix-timestamp:b07beac5cf000e882e3d2de8efb60ff8&#34;&gt;Get the current UNIX timestamp&lt;/h2&gt;
 
 &lt;p&gt;Eg: Tue Sep 22 23:34:33 UTC 2015&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ date +%s
-1442964873
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; date +%s
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;1442964873&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;h2 id=&#34;get-the-unix-timestamp-of-a-specific-date:b07beac5cf000e882e3d2de8efb60ff8&#34;&gt;Get the UNIX timestamp of a specific date.&lt;/h2&gt;
 
 &lt;p&gt;&lt;strong&gt;OSX&lt;/strong&gt; use this pattern [[[mm]dd]HH]MM[[cc]yy][.ss]]&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ date -ju 092223342015.33 +%s
-1442964873
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; date -ju 092223342015.33 +%s
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;1442964873&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;ul&gt;
 &lt;li&gt;&lt;em&gt;-j&lt;/em&gt; : do not set the date&lt;/li&gt;
@@ -401,30 +374,26 @@ demo                      latest              dfa7313cd338        3 minutes ago 
 &lt;/ul&gt;
 
 &lt;p&gt;&lt;strong&gt;Linux&lt;/strong&gt; use this pattern mm/dd/ccyy HH:MM:ss&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ date -d &amp;quot;09/22/2015 23:34:33&amp;quot; +%s
-1442964873
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; date -d &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;09/22/2015 23:34:33&amp;quot;&lt;/span&gt; +%s
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;1442964873&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;h2 id=&#34;convert-unix-timestamp-to-human-readable-format:b07beac5cf000e882e3d2de8efb60ff8&#34;&gt;Convert Unix timestamp to Human readable format&lt;/h2&gt;
 
 &lt;p&gt;&lt;strong&gt;OSX&lt;/strong&gt; for local timezone&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ date -r 1442964873
-Tue Sep 22 16:34:33 PDT 2015
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; date -r 1442964873
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;Tue Sep 22 16:34:33 PDT 2015&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;&lt;strong&gt;OSX&lt;/strong&gt; in UTC&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ date -ur 1442964873
-Tue Sep 22 23:34:33 UTC 2015
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; date -ur 1442964873
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;Tue Sep 22 23:34:33 UTC 2015&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;&lt;strong&gt;Linux&lt;/strong&gt; in UTC&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;date -d @1442964873
-Tue Sep 22 23:34:33 UTC 2015
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; date -d @1442964873
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;Tue Sep 22 23:34:33 UTC 2015&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 </description>
     </item>
     
@@ -435,48 +404,46 @@ Tue Sep 22 23:34:33 UTC 2015
       
       <guid>https://sebest.github.io/post/a-quick-md5sum-equivalent-in-python/</guid>
       <description>&lt;p&gt;This post will show you how to write a function to compute md5 sum of a file using the &lt;b&gt;hashlib module&lt;/b&gt;, the &lt;b&gt;with statement&lt;/b&gt; and being memory efficient by not reading the whole file in memory.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;from&lt;/span&gt; &lt;span style=&#34;color: #00CCFF; font-weight: bold&#34;&gt;__future__&lt;/span&gt; &lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;import&lt;/span&gt; with_statement
+&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;from&lt;/span&gt; &lt;span style=&#34;color: #00CCFF; font-weight: bold&#34;&gt;hashlib&lt;/span&gt; &lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;import&lt;/span&gt; md5
 
-&lt;pre&gt;&lt;code&gt;from __future__ import with_statement
-from hashlib import md5
+&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color: #CC00FF&#34;&gt;md5sum&lt;/span&gt;(filename, buf_size&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color: #FF6600&#34;&gt;8192&lt;/span&gt;):
+    m &lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt; md5()
+    &lt;span style=&#34;color: #0099FF; font-style: italic&#34;&gt;# the with statement makes sure the file will be closed&lt;/span&gt;
+    &lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;with&lt;/span&gt; &lt;span style=&#34;color: #336666&#34;&gt;open&lt;/span&gt;(filename, &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;#39;b&amp;#39;&lt;/span&gt;) &lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;as&lt;/span&gt; f:
+        &lt;span style=&#34;color: #0099FF; font-style: italic&#34;&gt;# We read the file in small chunk until EOF&lt;/span&gt;
+        data &lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt; f&lt;span style=&#34;color: #555555&#34;&gt;.&lt;/span&gt;read(buf_size)
+        &lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;while&lt;/span&gt; data:
+            &lt;span style=&#34;color: #0099FF; font-style: italic&#34;&gt;# We had data to the md5 hash&lt;/span&gt;
+            m&lt;span style=&#34;color: #555555&#34;&gt;.&lt;/span&gt;update(data)
+            data &lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt; f&lt;span style=&#34;color: #555555&#34;&gt;.&lt;/span&gt;read(buf_size)
+    &lt;span style=&#34;color: #0099FF; font-style: italic&#34;&gt;# We return the md5 hash in hexadecimal format&lt;/span&gt;
+    &lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;return&lt;/span&gt; m&lt;span style=&#34;color: #555555&#34;&gt;.&lt;/span&gt;hexdigest()
 
-def md5sum(filename, buf_size=8192):
-    m = md5()
-    # the with statement makes sure the file will be closed
-    with open(filename, &#39;b&#39;) as f:
-        # We read the file in small chunk until EOF
-        data = f.read(buf_size)
-        while data:
-            # We had data to the md5 hash
-            m.update(data)
-            data = f.read(buf_size)
-    # We return the md5 hash in hexadecimal format
-    return m.hexdigest()
+&lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;if&lt;/span&gt; __name__ &lt;span style=&#34;color: #555555&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;#39;__main__&amp;#39;&lt;/span&gt;:
+    &lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;import&lt;/span&gt; &lt;span style=&#34;color: #00CCFF; font-weight: bold&#34;&gt;sys&lt;/span&gt;
+    &lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;print&lt;/span&gt; md5sum(sys&lt;span style=&#34;color: #555555&#34;&gt;.&lt;/span&gt;argv[&lt;span style=&#34;color: #FF6600&#34;&gt;1&lt;/span&gt;])
+&lt;/pre&gt;&lt;/div&gt;
 
-if __name__ == &#39;__main__&#39;:
-    import sys
-    print md5sum(sys.argv[1])
-&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now let&amp;rsquo;s see how quick it is against the real md5sum using a test file of 10Go!&lt;br/&gt;&lt;/p&gt;
 
-&lt;p&gt;Now let&amp;rsquo;s see how quick it is against the real md5sum using a test file of 10Go!&lt;br/&gt;
-The real md5sum:&lt;/p&gt;
+&lt;p&gt;The real md5sum:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; &lt;span style=&#34;color: #336666&#34;&gt;time &lt;/span&gt;md5sum /data/testfile
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;b215f7bf5b09fa3e9848a6a66f3f3172  /data/testfile&lt;/span&gt;
 
-&lt;pre&gt;&lt;code&gt;# time md5sum /data/testfile
-b215f7bf5b09fa3e9848a6a66f3f3172  /data/testfile
-
-real    0m31.148s
-user    0m27.738s
-sys     0m3.408s
-&lt;/code&gt;&lt;/pre&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;real    0m31.148s&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;user    0m27.738s&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;sys     0m3.408s&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;The python version of md5sum:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; &lt;span style=&#34;color: #336666&#34;&gt;time &lt;/span&gt;python md5sum.py /data/testfile
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;b215f7bf5b09fa3e9848a6a66f3f3172&lt;/span&gt;
 
-&lt;pre&gt;&lt;code&gt;# time python md5sum.py /data/testfile
-b215f7bf5b09fa3e9848a6a66f3f3172
-
-real    0m27.791s
-user    0m24.514s
-sys     0m3.276s
-&lt;/code&gt;&lt;/pre&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;real    0m27.791s&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;user    0m24.514s&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;sys     0m3.276s&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;The python based version is almost 4 seconds quicker than the C based version!&lt;/p&gt;
 </description>
@@ -492,16 +459,17 @@ sys     0m3.276s
 
 &lt;p&gt;Imagine you are using keepalived + haproxy on your loadbalancers in active/active mode.&lt;/p&gt;
 
-&lt;p&gt;You have 2 vips one is on the first load balancerm the other on the second. Now in your haproxy.cfg you have to bind these ips, the probem is that one of the vips is not on the current loadbalancer, so haproxy will refuse to start with the following error: &lt;i&gt;Starting proxy appli1-rewrite: cannot bind socket&lt;/i&gt;.&lt;/p&gt;
+&lt;p&gt;You have 2 virtual IPs one is on the first load balancer and the other is on the second.&lt;/p&gt;
+
+&lt;p&gt;Now in your haproxy.cfg you have to bind these IPs, the probem is that one of the virtual IPs is not on the current loadbalancer, so haproxy will refuse to start with the following error: &lt;i&gt;Starting proxy appli1-rewrite: cannot bind socket&lt;/i&gt;.&lt;/p&gt;
 
 &lt;p&gt;The common solution is to listen on &lt;i&gt;0.0.0.0&lt;/i&gt;, but it not always practical on wanted, especially if you want to have another server using the same port but on another ip, or if you only want to listen on internal interfaces.&lt;/p&gt;
 
-&lt;p&gt;The solution is a sysctl, that will allow any software to bind any ip even if it&amp;rsquo;s not up yet:&lt;/p&gt;
+&lt;p&gt;The solution is a &lt;strong&gt;sysctl&lt;/strong&gt; that will allow any software to bind an IP even if it&amp;rsquo;s not up yet:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;sysctl -w net.ipv4.ip_nonlocal_bind=1
+&lt;/pre&gt;&lt;/div&gt;
 
-&lt;pre&gt;&lt;code&gt;sysctl -w net.ipv4.ip_nonlocal_bind=1
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;You should put this in &lt;strong&gt;/etc/sysctl.conf&lt;/strong&gt; to make it permanent.&lt;/p&gt;
+&lt;p&gt;You should put this in &lt;strong&gt;/etc/sysctl.conf&lt;/strong&gt; to make this change permanent.&lt;/p&gt;
 </description>
     </item>
     
@@ -516,39 +484,33 @@ sys     0m3.276s
 &lt;p&gt;The magic comes from &lt;a href=&#34;http://github.com/astraw/stdeb&#34;&gt;stdeb&lt;/a&gt;&lt;/p&gt;
 
 &lt;p&gt;The first step is to install it:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;sudo apt-get install python-stdeb
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; sudo apt-get install python-stdeb
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;stdeb can download, package and install any python software hosted on &lt;a href=&#34;http://pypi.python.org/pypi&#34;&gt;PyPi&lt;/a&gt; using the &lt;b&gt;pypi-install&lt;/b&gt; command. It works almost like easy_install or pip.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;pypi-install Werkzeug
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; pypi-install Werkzeug
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;You can check that the package is installed:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ dpkg -l | grep werkzeug
-ii  python-werkzeug    0.6.2-1    The Swiss Army knife of Python web developme
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; dpkg -l | grep werkzeug
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;ii  python-werkzeug    0.6.2-1    The Swiss Army knife of Python web developme&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;If you want more control on the buildprocess and access the debian source package, you must follow theses steps:&lt;br?&gt;
 First you must find and download the archive of the software you want to package:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;# http://pypi.python.org/pypi/Jinja2/2.4.1
-wget http://pypi.python.org/packages/source/J/Jinja2/Jinja2-2.4.1.tar.gz
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;#&lt;/span&gt; http://pypi.python.org/pypi/Jinja2/2.4.1
+&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; wget http://pypi.python.org/packages/source/J/Jinja2/Jinja2-2.4.1.tar.gz
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;Now we will create the debian source package with &lt;b&gt;py2dsc&lt;/b&gt;&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;py2dsc Jinja2-2.4.1.tar.gz
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; py2dsc Jinja2-2.4.1.tar.gz
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;The source package is in the &lt;b&gt;deb_dist&lt;/b&gt; folder.
 If you want to build the binary package with debuild:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;cd deb_dist/jinja2-2.4.1/
-debuild
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; &lt;span style=&#34;color: #336666&#34;&gt;cd &lt;/span&gt;deb_dist/jinja2-2.4.1/
+&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; debuild
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;You now have &lt;b&gt;python-jinja2_2.4.1-1_all.deb&lt;/b&gt; in deb_dist!
 Happy packaging ;)&lt;/p&gt;
@@ -567,9 +529,8 @@ The only requirement is to have python 2.5+.&lt;/p&gt;
 &lt;p&gt;The first thing to do is to go in the directory you want to share, this is the directory that would be apache DocumentRoot.&lt;/p&gt;
 
 &lt;p&gt;Then issue the following command and you are done:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ python -m SimpleHTTPServer
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #003333&#34;&gt;$ &lt;/span&gt;python -m SimpleHTTPServer
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;You can optionnaly give a port number after &lt;b&gt;SimpleHTTPServer&lt;/b&gt;, the default port number is 8000&lt;/p&gt;
 </description>
@@ -584,27 +545,23 @@ The only requirement is to have python 2.5+.&lt;/p&gt;
       <description>&lt;p&gt;Following my previous post about automatic installations of ubuntu karmic, here is a quick tips to set the root password automatically.&lt;br/&gt;
 Edit your &lt;b&gt;preseed.cfg&lt;/b&gt;&lt;br/&gt;
 The &lt;b&gt;unsafe&lt;/b&gt; solution:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;# Root password, either in clear text
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;# Root password, either in clear text
 d-i passwd/root-password password r00tme
 d-i passwd/root-password-again password r00tme
-&lt;/code&gt;&lt;/pre&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;The &lt;b&gt;safe&lt;/b&gt; solution:&lt;br/&gt;
 You need the &lt;b&gt;mkpasswd&lt;/b&gt; util from the whois package&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;apt-get install whois
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;apt-get install whois
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;Then you can generate you secure password and put the returned value in your preseed.cfg.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;# printf &amp;quot;r00tme&amp;quot; | mkpasswd -s -m md5
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;# printf &amp;quot;r00tme&amp;quot; | mkpasswd -s -m md5
 $1$CHp7HkQW$Z2ZTY5cZMurbwbqU1zaS.1
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;pre&gt;&lt;code&gt;# or encrypted using an MD5 hash.
+&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;# or encrypted using an MD5 hash.
 d-i passwd/root-password-crypted password $1$CHp7HkQW$Z2ZTY5cZMurbwbqU1zaS.1
-&lt;/code&gt;&lt;/pre&gt;
+&lt;/pre&gt;&lt;/div&gt;
 </description>
     </item>
     
@@ -622,65 +579,62 @@ Keepalived implemented the &lt;a href=&#34;http://en.wikipedia.org/wiki/Virtual_
 &lt;p&gt;This plugin allows you to define your custom XML config file and then use its content in your template.&lt;/p&gt;
 
 &lt;p&gt;Here is my &lt;b&gt;/etc/bcfg2/Properties/vips.xml&lt;/b&gt;&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;&amp;lt;vips&amp;gt;
-  &amp;lt;group name=&amp;quot;axel&amp;quot;&amp;gt;
-    &amp;lt;vip iface=&amp;quot;eth0&amp;quot; vid=&amp;quot;10&amp;quot; ip=&amp;quot;10.201.4.101&amp;quot; netmask=&amp;quot;16&amp;quot; broadcast=&amp;quot;10.201.255.255&amp;quot; password=&amp;quot;mypass1&amp;quot;&amp;gt;
-      &amp;lt;host name=&amp;quot;axel-01&amp;quot; master=&amp;quot;yes&amp;quot;/&amp;gt;
-      &amp;lt;host name=&amp;quot;axel-02&amp;quot; master=&amp;quot;no&amp;quot;/&amp;gt;
-    &amp;lt;/vip&amp;gt;
-    &amp;lt;vip iface=&amp;quot;vlan501&amp;quot; vid=&amp;quot;11&amp;quot; ip=&amp;quot;42.42.121.111&amp;quot; netmask&amp;quot;26&amp;quot; broadcast=&amp;quot;42.42.121.127&amp;quot; password=&amp;quot;mypass2&amp;quot;&amp;gt;
-      &amp;lt;host name=&amp;quot;axel-01&amp;quot; master=&amp;quot;yes&amp;quot;/&amp;gt;
-      &amp;lt;host name=&amp;quot;axel-02&amp;quot; master=&amp;quot;no&amp;quot;/&amp;gt;
-    &amp;lt;/vip&amp;gt;
-    &amp;lt;vip iface=&amp;quot;vlan501&amp;quot; vid=&amp;quot;12&amp;quot; ip=&amp;quot;42.42.121.112&amp;quot; netmask=&amp;quot;26&amp;quot; broadcast=&amp;quot;42.42.121.127&amp;quot; password=&amp;quot;mypass3&amp;quot;&amp;gt;
-      &amp;lt;host name=&amp;quot;axel-01&amp;quot; master=&amp;quot;no&amp;quot;/&amp;gt;
-      &amp;lt;host name=&amp;quot;axel-02&amp;quot; master=&amp;quot;yes&amp;quot;/&amp;gt;
-    &amp;lt;/vip&amp;gt;
-  &amp;lt;/group&amp;gt;
-&amp;lt;/vips&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;lt;vips&amp;gt;&lt;/span&gt;
+  &lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;lt;group&lt;/span&gt; &lt;span style=&#34;color: #330099&#34;&gt;name=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;axel&amp;quot;&lt;/span&gt;&lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;gt;&lt;/span&gt;
+    &lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;lt;vip&lt;/span&gt; &lt;span style=&#34;color: #330099&#34;&gt;iface=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;eth0&amp;quot;&lt;/span&gt; &lt;span style=&#34;color: #330099&#34;&gt;vid=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;10&amp;quot;&lt;/span&gt; &lt;span style=&#34;color: #330099&#34;&gt;ip=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;10.201.4.101&amp;quot;&lt;/span&gt; &lt;span style=&#34;color: #330099&#34;&gt;netmask=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;16&amp;quot;&lt;/span&gt; &lt;span style=&#34;color: #330099&#34;&gt;broadcast=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;10.201.255.255&amp;quot;&lt;/span&gt; &lt;span style=&#34;color: #330099&#34;&gt;password=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;mypass1&amp;quot;&lt;/span&gt;&lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;gt;&lt;/span&gt;
+      &lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;lt;host&lt;/span&gt; &lt;span style=&#34;color: #330099&#34;&gt;name=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;axel-01&amp;quot;&lt;/span&gt; &lt;span style=&#34;color: #330099&#34;&gt;master=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;yes&amp;quot;&lt;/span&gt;&lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;/&amp;gt;&lt;/span&gt;
+      &lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;lt;host&lt;/span&gt; &lt;span style=&#34;color: #330099&#34;&gt;name=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;axel-02&amp;quot;&lt;/span&gt; &lt;span style=&#34;color: #330099&#34;&gt;master=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;no&amp;quot;&lt;/span&gt;&lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;lt;/vip&amp;gt;&lt;/span&gt;
+    &lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;lt;vip&lt;/span&gt; &lt;span style=&#34;color: #330099&#34;&gt;iface=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;vlan501&amp;quot;&lt;/span&gt; &lt;span style=&#34;color: #330099&#34;&gt;vid=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;11&amp;quot;&lt;/span&gt; &lt;span style=&#34;color: #330099&#34;&gt;ip=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;42.42.121.111&amp;quot;&lt;/span&gt; &lt;span style=&#34;color: #AA0000; background-color: #FFAAAA&#34;&gt;netmask&amp;quot;26&amp;quot;&lt;/span&gt; &lt;span style=&#34;color: #330099&#34;&gt;broadcast=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;42.42.121.127&amp;quot;&lt;/span&gt; &lt;span style=&#34;color: #330099&#34;&gt;password=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;mypass2&amp;quot;&lt;/span&gt;&lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;gt;&lt;/span&gt;
+      &lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;lt;host&lt;/span&gt; &lt;span style=&#34;color: #330099&#34;&gt;name=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;axel-01&amp;quot;&lt;/span&gt; &lt;span style=&#34;color: #330099&#34;&gt;master=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;yes&amp;quot;&lt;/span&gt;&lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;/&amp;gt;&lt;/span&gt;
+      &lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;lt;host&lt;/span&gt; &lt;span style=&#34;color: #330099&#34;&gt;name=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;axel-02&amp;quot;&lt;/span&gt; &lt;span style=&#34;color: #330099&#34;&gt;master=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;no&amp;quot;&lt;/span&gt;&lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;lt;/vip&amp;gt;&lt;/span&gt;
+    &lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;lt;vip&lt;/span&gt; &lt;span style=&#34;color: #330099&#34;&gt;iface=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;vlan501&amp;quot;&lt;/span&gt; &lt;span style=&#34;color: #330099&#34;&gt;vid=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;12&amp;quot;&lt;/span&gt; &lt;span style=&#34;color: #330099&#34;&gt;ip=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;42.42.121.112&amp;quot;&lt;/span&gt; &lt;span style=&#34;color: #330099&#34;&gt;netmask=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;26&amp;quot;&lt;/span&gt; &lt;span style=&#34;color: #330099&#34;&gt;broadcast=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;42.42.121.127&amp;quot;&lt;/span&gt; &lt;span style=&#34;color: #330099&#34;&gt;password=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;mypass3&amp;quot;&lt;/span&gt;&lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;gt;&lt;/span&gt;
+      &lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;lt;host&lt;/span&gt; &lt;span style=&#34;color: #330099&#34;&gt;name=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;axel-01&amp;quot;&lt;/span&gt; &lt;span style=&#34;color: #330099&#34;&gt;master=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;no&amp;quot;&lt;/span&gt;&lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;/&amp;gt;&lt;/span&gt;
+      &lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;lt;host&lt;/span&gt; &lt;span style=&#34;color: #330099&#34;&gt;name=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;axel-02&amp;quot;&lt;/span&gt; &lt;span style=&#34;color: #330099&#34;&gt;master=&lt;/span&gt;&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;yes&amp;quot;&lt;/span&gt;&lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;lt;/vip&amp;gt;&lt;/span&gt;
+  &lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;lt;/group&amp;gt;&lt;/span&gt;
+&lt;span style=&#34;color: #330099; font-weight: bold&#34;&gt;&amp;lt;/vips&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;Now the template &lt;b&gt;/etc/bcfg2/TGenshi/keepalived/keepalived.conf/template.newtxt&lt;/b&gt;&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;{% python
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;{% python
 vips = []
 
 try:
-    hostname = list(metadata.aliases)[0].split(&#39;.&#39;,1)[0]
-    for vip_info in metadata.Properties[&#39;vips.xml&#39;].data.find(&amp;quot;.//group[@name=&#39;%s&#39;]&amp;quot; % (hostname.split(&#39;-&#39;)[0])):
+    hostname = list(metadata.aliases)[0].split(&amp;#39;.&amp;#39;,1)[0]
+    for vip_info in metadata.Properties[&amp;#39;vips.xml&amp;#39;].data.find(&amp;quot;.//group[@name=&amp;#39;%s&amp;#39;]&amp;quot; % (hostname.split(&amp;#39;-&amp;#39;)[0])):
         vip = vip_info.attrib
         print vip
         for host_info in vip_info:
-            if host_info.attrib[&#39;name&#39;] == hostname:
-               vip.update({&#39;state&#39; : host_info.attrib[&#39;master&#39;] == &#39;yes&#39; and &#39;MASTER&#39; or &#39;BACKUP&#39; })
+            if host_info.attrib[&amp;#39;name&amp;#39;] == hostname:
+               vip.update({&amp;#39;state&amp;#39; : host_info.attrib[&amp;#39;master&amp;#39;] == &amp;#39;yes&amp;#39; and &amp;#39;MASTER&amp;#39; or &amp;#39;BACKUP&amp;#39; })
                vips.append(vip)
 except:
     pass
 %}\
-# ${hostname}
+# &lt;span style=&#34;color: #009999&#34;&gt;${&lt;/span&gt;hostname&lt;span style=&#34;color: #009999&#34;&gt;}&lt;/span&gt;
 
 {% for index, vip in enumerate(vips) %}\
-vrrp_instance VI_${index} {
-    state ${vip[&#39;state&#39;]}
-    interface ${vip[&#39;iface&#39;]}
-    virtual_router_id ${vip[&#39;vid&#39;]}
+vrrp_instance VI_&lt;span style=&#34;color: #009999&#34;&gt;${&lt;/span&gt;index&lt;span style=&#34;color: #009999&#34;&gt;}&lt;/span&gt; {
+    state &lt;span style=&#34;color: #009999&#34;&gt;${&lt;/span&gt;vip[&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;#39;state&amp;#39;&lt;/span&gt;]&lt;span style=&#34;color: #009999&#34;&gt;}&lt;/span&gt;
+    interface &lt;span style=&#34;color: #009999&#34;&gt;${&lt;/span&gt;vip[&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;#39;iface&amp;#39;&lt;/span&gt;]&lt;span style=&#34;color: #009999&#34;&gt;}&lt;/span&gt;
+    virtual_router_id &lt;span style=&#34;color: #009999&#34;&gt;${&lt;/span&gt;vip[&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;#39;vid&amp;#39;&lt;/span&gt;]&lt;span style=&#34;color: #009999&#34;&gt;}&lt;/span&gt;
     priority 100
     authentication {
         auth_type PASS
-        auth_pass ${vip[&#39;password&#39;]}
+        auth_pass &lt;span style=&#34;color: #009999&#34;&gt;${&lt;/span&gt;vip[&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;#39;password&amp;#39;&lt;/span&gt;]&lt;span style=&#34;color: #009999&#34;&gt;}&lt;/span&gt;
     }
 
     virtual_ipaddress {
-        ${vip[&#39;ip&#39;]}/${vip[&#39;netmask&#39;]} brd ${vip[&#39;broadcast&#39;]} dev ${vip[&#39;iface&#39;]}
+        &lt;span style=&#34;color: #009999&#34;&gt;${&lt;/span&gt;vip[&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;#39;ip&amp;#39;&lt;/span&gt;]&lt;span style=&#34;color: #009999&#34;&gt;}&lt;/span&gt;/&lt;span style=&#34;color: #009999&#34;&gt;${&lt;/span&gt;vip[&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;#39;netmask&amp;#39;&lt;/span&gt;]&lt;span style=&#34;color: #009999&#34;&gt;}&lt;/span&gt; brd &lt;span style=&#34;color: #009999&#34;&gt;${&lt;/span&gt;vip[&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;#39;broadcast&amp;#39;&lt;/span&gt;]&lt;span style=&#34;color: #009999&#34;&gt;}&lt;/span&gt; dev &lt;span style=&#34;color: #009999&#34;&gt;${&lt;/span&gt;vip[&lt;span style=&#34;color: #CC3300&#34;&gt;&amp;#39;iface&amp;#39;&lt;/span&gt;]&lt;span style=&#34;color: #009999&#34;&gt;}&lt;/span&gt;
     }
 }
 {% end %}
-&lt;/code&gt;&lt;/pre&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;This will generate this kind of config file:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;# axel-01
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;# axel-01
 
 vrrp_instance VI_0 {
     state MASTER
@@ -724,7 +678,7 @@ vrrp_instance VI_2 {
         42.42.121.112/26 brd 42.42.121.127 dev vlan501
     }
 }
-&lt;/code&gt;&lt;/pre&gt;
+&lt;/pre&gt;&lt;/div&gt;
 </description>
     </item>
     
@@ -748,31 +702,27 @@ vrrp_instance VI_2 {
 &lt;/ul&gt;&lt;/p&gt;
 
 &lt;p&gt;The first step is to install and configure a tftp server to transfer all files (pxelinux, pxelinux config file, linux kernel and initrd)&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;apt-get install tftpd-hpa
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;apt-get install tftpd-hpa
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;Then we edit the config file: &lt;b&gt;/etc/default/tftpd-hpa&lt;/b&gt;&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;RUN_DAEMON=&amp;quot;yes&amp;quot;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;RUN_DAEMON=&amp;quot;yes&amp;quot;
 OPTIONS=&amp;quot;-4 -l -v -s /var/lib/tftpboot&amp;quot;
-&lt;/code&gt;&lt;/pre&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;You can now start your tftp server &lt;b&gt;/etc/init.d/tftpd-hpa start&lt;/b&gt;. Make sure that the directory defined in the config file exists and that the server is properly running.&lt;br/&gt;&lt;/p&gt;
 
 &lt;p&gt;The second step is to setup a DHCP server, we&amp;rsquo;ll use dnsmasq as it is really easy to setup:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;apt-get install dnsmasq
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;apt-get install dnsmasq
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;Then we edit the config file: &lt;b&gt;/etc/dnsmasq.conf&lt;/b&gt;&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;dhcp-host=08:00:27:3B:0A:E2,192.168.42.42
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;dhcp-host=08:00:27:3B:0A:E2,192.168.42.42
 
 dhcp-boot=pxelinux.0
 dhcp-range=192.168.42.5,192.168.42.99,12h
 dhcp-option=3,192.168.42.1
-&lt;/code&gt;&lt;/pre&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;You should make sure that the ip (192.168.42.X) range match the ip of your network interface.&lt;br/&gt;
 The &lt;b&gt;dhcp-host&lt;/b&gt; directive is used to assign a static ip address to a specific mac address.&lt;/p&gt;
@@ -783,18 +733,15 @@ The &lt;b&gt;dhcp-host&lt;/b&gt; directive is used to assign a static ip address
 In the tftpboot directory, create a folder &lt;b&gt;pxelinux.cfg&lt;/b&gt;&lt;br/&gt;
 In this directory, you can either create a file named from the mac address of the client (eg: 01-08-00-27-3b-0a-e2) or you can name it &lt;b&gt;default&lt;/b&gt; but it&amp;rsquo;s quite dangerous as it would match any host and would reinstall it upon reboot.&lt;br/&gt;
 The content of the file should be (don&amp;rsquo;t forget to restart dnsmasq after the modification to the configuration file):&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;default server
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;default server
 
 label server
 kernel linux
 append initrd=initrd.gz auto url=http://192.168.42.1/preseed.cfg vga=normal debian-installer/locale=en_US console-setup/layoutcode=fr netcfg/choose_interface=eth0 netcfg/get_hostname=
-
-&lt;/code&gt;&lt;/pre&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;Now the last step is to install any webserver to serve the file &lt;/b&gt;preseed.cfg&lt;/b&gt; references in the previous file, this file will contain all the answers to debian installer questions, so it should be fully automatic.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;d-i mirror/country string manual
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;d-i mirror/country string manual
 d-i mirror/http/hostname string us.archive.ubuntu.com
 d-i mirror/http/directory string /ubuntu
 d-i mirror/http/proxy string
@@ -849,7 +796,7 @@ d-i debian-installer/allow_unauthenticated string true
 d-i grub-installer/with_other_os boolean true
 
 d-i finish-install/reboot_in_progress note
-&lt;/code&gt;&lt;/pre&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;If you more informations about this file you can read the following &lt;a href=&#34;https://help.ubuntu.com/9.10/installation-guide/i386/appendix-preseed.html&#34;&gt;page&lt;/a&gt;. And use &lt;a href=&#34;http://d-i.alioth.debian.org/svn/debian-installer/installer/doc/devel/partman-auto-recipe.txt&#34;&gt;this page&lt;/a&gt; for infos about partionning.&lt;/p&gt;
 </description>
@@ -864,45 +811,41 @@ d-i finish-install/reboot_in_progress note
       <description>&lt;p&gt;Ucarp is an implementation of Common Address Redundancy Protocol (CARP) allowing failover of a single Virtual IP (VIP) for high availability.&lt;/p&gt;
 
 &lt;p&gt;In order to install ucarp:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;apt-get install ucarp
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;apt-get install ucarp
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;You can find more about ubuntu&amp;rsquo;s integration of ucarp in &lt;strong&gt;/usr/share/doc/ucarp/README.Debian&lt;/strong&gt;.&lt;/p&gt;
 
 &lt;p&gt;We&amp;rsquo;ll now modify &lt;strong&gt;/etc/network/interfaces&lt;/strong&gt; to add our virtual IP: 10.200.0.200:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; cat /etc/network/interfaces
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;auto eth0&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;iface eth0 inet static&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;        address 10.200.0.102&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;        netmask 255.255.255.0&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;        ucarp-vid 3&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;        ucarp-vip 10.200.0.200&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;        ucarp-password ourpassword&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;        ucarp-advskew 10&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;        ucarp-advbase 1&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;        ucarp-master yes&lt;/span&gt;
 
-&lt;pre&gt;&lt;code&gt;# /etc/network/interfaces
-auto eth0
-iface eth0 inet static
-        address 10.200.0.102
-        netmask 255.255.255.0
-        ucarp-vid 3
-        ucarp-vip 10.200.0.200
-        ucarp-password ourpassword
-        ucarp-advskew 10
-        ucarp-advbase 1
-        ucarp-master yes
-
-iface eth0:ucarp inet static
-      address 10.200.0.200
-      netmask 255.255.255.255
-&lt;/code&gt;&lt;/pre&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;iface eth0:ucarp inet static&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;      address 10.200.0.200&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;      netmask 255.255.255.255&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;You can now restart your network:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;/etc/init.d/networking restart
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;/etc/init.d/networking restart
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;And you can check that your virtual IP is there:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;# ip a show dev eth0
-2: eth0: &amp;lt;BROADCAST,MULTICAST,UP,LOWER_UP&amp;gt; mtu 1500 qdisc pfifo_fast state UP qlen 1000
-    link/ether 00:26:b9:f9:48:d0 brd ff:ff:ff:ff:ff:ff
-    inet 10.200.0.102/24 brd 10.200.0.255 scope global eth0
-    inet 10.200.0.200/32 brd 10.255.255.255 scope global eth0:ucarp
-       valid_lft forever preferred_lft forever
-&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; ip a show dev eth0
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;2: eth0: &amp;lt;BROADCAST,MULTICAST,UP,LOWER_UP&amp;gt; mtu 1500 qdisc pfifo_fast state UP qlen 1000&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;    link/ether 00:26:b9:f9:48:d0 brd ff:ff:ff:ff:ff:ff&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;    inet 10.200.0.102/24 brd 10.200.0.255 scope global eth0&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;    inet 10.200.0.200/32 brd 10.255.255.255 scope global eth0:ucarp&lt;/span&gt;
+&lt;span style=&#34;color: #AAAAAA&#34;&gt;       valid_lft forever preferred_lft forever&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;On your second server you can do the exact same steps, except that you can set &lt;strong&gt;ucarp-master&lt;/strong&gt; to &lt;strong&gt;no&lt;/strong&gt;.&lt;/p&gt;
 

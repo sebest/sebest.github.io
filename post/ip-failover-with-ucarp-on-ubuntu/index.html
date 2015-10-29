@@ -19,7 +19,6 @@
   
   <link rel="stylesheet" href="/css/sanitize.css">
   <link rel="stylesheet" href="/css/responsive.css">
-  <link rel="stylesheet" href="/css/highlight_monokai.css">
   <link rel="stylesheet" href="/css/theme.css">
   <link rel="stylesheet" href="/css/custom.css">
   
@@ -72,45 +71,41 @@
       <p>Ucarp is an implementation of Common Address Redundancy Protocol (CARP) allowing failover of a single Virtual IP (VIP) for high availability.</p>
 
 <p>In order to install ucarp:</p>
-
-<pre><code>apt-get install ucarp
-</code></pre>
+<div class="highlight" style="background: #f0f3f3"><pre style="line-height: 125%">apt-get install ucarp
+</pre></div>
 
 <p>You can find more about ubuntu&rsquo;s integration of ucarp in <strong>/usr/share/doc/ucarp/README.Debian</strong>.</p>
 
 <p>We&rsquo;ll now modify <strong>/etc/network/interfaces</strong> to add our virtual IP: 10.200.0.200:</p>
+<div class="highlight" style="background: #f0f3f3"><pre style="line-height: 125%"><span style="color: #000099; font-weight: bold">$</span> cat /etc/network/interfaces
+<span style="color: #AAAAAA">auto eth0</span>
+<span style="color: #AAAAAA">iface eth0 inet static</span>
+<span style="color: #AAAAAA">        address 10.200.0.102</span>
+<span style="color: #AAAAAA">        netmask 255.255.255.0</span>
+<span style="color: #AAAAAA">        ucarp-vid 3</span>
+<span style="color: #AAAAAA">        ucarp-vip 10.200.0.200</span>
+<span style="color: #AAAAAA">        ucarp-password ourpassword</span>
+<span style="color: #AAAAAA">        ucarp-advskew 10</span>
+<span style="color: #AAAAAA">        ucarp-advbase 1</span>
+<span style="color: #AAAAAA">        ucarp-master yes</span>
 
-<pre><code># /etc/network/interfaces
-auto eth0
-iface eth0 inet static
-        address 10.200.0.102
-        netmask 255.255.255.0
-        ucarp-vid 3
-        ucarp-vip 10.200.0.200
-        ucarp-password ourpassword
-        ucarp-advskew 10
-        ucarp-advbase 1
-        ucarp-master yes
-
-iface eth0:ucarp inet static
-      address 10.200.0.200
-      netmask 255.255.255.255
-</code></pre>
+<span style="color: #AAAAAA">iface eth0:ucarp inet static</span>
+<span style="color: #AAAAAA">      address 10.200.0.200</span>
+<span style="color: #AAAAAA">      netmask 255.255.255.255</span>
+</pre></div>
 
 <p>You can now restart your network:</p>
-
-<pre><code>/etc/init.d/networking restart
-</code></pre>
+<div class="highlight" style="background: #f0f3f3"><pre style="line-height: 125%">/etc/init.d/networking restart
+</pre></div>
 
 <p>And you can check that your virtual IP is there:</p>
-
-<pre><code># ip a show dev eth0
-2: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UP qlen 1000
-    link/ether 00:26:b9:f9:48:d0 brd ff:ff:ff:ff:ff:ff
-    inet 10.200.0.102/24 brd 10.200.0.255 scope global eth0
-    inet 10.200.0.200/32 brd 10.255.255.255 scope global eth0:ucarp
-       valid_lft forever preferred_lft forever
-</code></pre>
+<div class="highlight" style="background: #f0f3f3"><pre style="line-height: 125%"><span style="color: #000099; font-weight: bold">$</span> ip a show dev eth0
+<span style="color: #AAAAAA">2: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UP qlen 1000</span>
+<span style="color: #AAAAAA">    link/ether 00:26:b9:f9:48:d0 brd ff:ff:ff:ff:ff:ff</span>
+<span style="color: #AAAAAA">    inet 10.200.0.102/24 brd 10.200.0.255 scope global eth0</span>
+<span style="color: #AAAAAA">    inet 10.200.0.200/32 brd 10.255.255.255 scope global eth0:ucarp</span>
+<span style="color: #AAAAAA">       valid_lft forever preferred_lft forever</span>
+</pre></div>
 
 <p>On your second server you can do the exact same steps, except that you can set <strong>ucarp-master</strong> to <strong>no</strong>.</p>
 
@@ -167,9 +162,6 @@ iface eth0:ucarp inet static
 
 
 </div>
-
-<script src="/js/highlight.pack.js"></script>
-<script>hljs.initHighlightingOnLoad();</script>
 
 <script>
 	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
