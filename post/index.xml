@@ -38,6 +38,8 @@ logger &lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt; logging&lt;span
     &lt;span style=&#34;color: #006699; font-weight: bold&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color: #336666&#34;&gt;iter&lt;/span&gt;([data])
 &lt;/pre&gt;&lt;/div&gt;
 
+&lt;p&gt;The complete source code is available &lt;a href=&#34;https://github.com/sebest-blog/gunicorn-with-docker/&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
 &lt;h2 id=&#34;configuring-gunicorn:dfe07d0fde6b925b72e49a7b67d35d2c&#34;&gt;Configuring Gunicorn&lt;/h2&gt;
 
 &lt;p&gt;The best way to configure a Docker Container is using environment variables, Gunicorn does not natively support this. Gunicorn supports a &lt;a href=&#34;http://docs.gunicorn.org/en/latest/configure.html#configuration-file&#34;&gt;configuration file&lt;/a&gt; that can contain Python code, we will use this feature to be able to pass environment variables to configure it.&lt;/p&gt;
@@ -184,6 +186,8 @@ COPY myapp.py /
 &lt;p&gt;We can now run the Docker image with some Gunicorn parameters&lt;/p&gt;
 &lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; docker run -e &lt;span style=&#34;color: #003333&#34;&gt;GUNICORN_WORKERS&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color: #FF6600&#34;&gt;4&lt;/span&gt; -e &lt;span style=&#34;color: #003333&#34;&gt;GUNICORN_ACCESSLOG&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;- -p 8000:8000 sebestblog/gunicorn-with-docker
 &lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;The complete source code is available &lt;a href=&#34;https://github.com/sebest-blog/gunicorn-with-docker/&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
 </description>
     </item>
     
