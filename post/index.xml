@@ -46,6 +46,8 @@
     - COMMIT=${TRAVIS_COMMIT::8}
 &lt;/pre&gt;&lt;/div&gt;
 
+&lt;h2 id=&#34;creating-and-shipping-the-docker-image:64b13e5a1eef6b4d76cee8a3aa68e952&#34;&gt;Creating and shipping the Docker image&lt;/h2&gt;
+
 &lt;p&gt;In the &lt;strong&gt;after_success&lt;/strong&gt; section of the &lt;strong&gt;.travis.yml&lt;/strong&gt; file, we log on Docker Hub registry, then we build the image.&lt;/p&gt;
 
 &lt;p&gt;We also tag the generated image with:&lt;/p&gt;
@@ -66,6 +68,8 @@
   - docker tag $REPO:$COMMIT $REPO:travis-$TRAVIS_BUILD_NUMBER
   - docker push $REPO
 &lt;/pre&gt;&lt;/div&gt;
+
+&lt;h2 id=&#34;alternative-solution-using-rocker:64b13e5a1eef6b4d76cee8a3aa68e952&#34;&gt;Alternative solution using Rocker&lt;/h2&gt;
 
 &lt;p&gt;An alternative solution is to use Rocker that we presented in a precedent &lt;a href=&#34;https://sebest.github.io/post/using-rocker-to-build-minimal-python-docker-images/&#34;&gt;post&lt;/a&gt;.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;after_success:
