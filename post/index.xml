@@ -203,7 +203,9 @@ COPY myapp.py /
 
 &lt;p&gt;In this post, I will show you how to use this feature to build Docker images and store them on a Docker registry.&lt;/p&gt;
 
-&lt;p&gt;I&amp;rsquo;ll discuss to methods -  one using only Docker commands and the other using Rocker which I recently discussed about &lt;a href=&#34;https://sebest.github.io/post/using-rocker-to-build-minimal-python-docker-images/&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;I&amp;rsquo;ll discuss 2 methods, one using only Docker commands and another using Rocker which I recently discussed about &lt;a href=&#34;https://sebest.github.io/post/using-rocker-to-build-minimal-python-docker-images/&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;The complete source code is available &lt;a href=&#34;https://github.com/sebest-blog/using-travis-ci-to-build-docker-images&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
 
 &lt;h2 id=&#34;storing-your-docker-registry-credentials-securely:64b13e5a1eef6b4d76cee8a3aa68e952&#34;&gt;Storing your docker registry credentials securely&lt;/h2&gt;
 
@@ -223,7 +225,7 @@ COPY myapp.py /
 &lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;env:
   global:
     - secure: &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;UkF2CHX0lUZ...VI/LE=&amp;quot;&lt;/span&gt; &lt;span style=&#34;color: #0099FF; font-style: italic&#34;&gt;# DOCKER_EMAIL&lt;/span&gt;
-    - secure: &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;Z3fdBNPt5hR...VI/LE=&amp;quot;&lt;/span&gt; &lt;span style=&#34;color: #0099FF; font-style: italic&#34;&gt;# DOCKER_UERNAME&lt;/span&gt;
+    - secure: &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;Z3fdBNPt5hR...VI/LE=&amp;quot;&lt;/span&gt; &lt;span style=&#34;color: #0099FF; font-style: italic&#34;&gt;# DOCKER_USER&lt;/span&gt;
     - secure: &lt;span style=&#34;color: #CC3300&#34;&gt;&amp;quot;F4XbD6WybHC...VI/LE=&amp;quot;&lt;/span&gt; &lt;span style=&#34;color: #0099FF; font-style: italic&#34;&gt;# DOCKER_PASS&lt;/span&gt;
     - COMMIT=${TRAVIS_COMMIT::8}
 &lt;/pre&gt;&lt;/div&gt;
@@ -243,13 +245,15 @@ COPY myapp.py /
 &lt;p&gt;And finally we push it on the Docker Hub registry&lt;/p&gt;
 &lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;after_success:
   - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
-  - export REPO=pixelle/pxladsrv
+  - export REPO=sebestblog/travis-demo
   - export TAG=`if [ &amp;quot;$TRAVIS_BRANCH&amp;quot; == &amp;quot;master&amp;quot; ]; then echo &amp;quot;latest&amp;quot;; else echo $TRAVIS_BRANCH ; fi`
   - docker build -f Dockerfile -t $REPO:$COMMIT .
   - docker tag $REPO:$COMMIT $REPO:$TAG
   - docker tag $REPO:$COMMIT $REPO:travis-$TRAVIS_BUILD_NUMBER
   - docker push $REPO
 &lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;The complete source code is available &lt;a href=&#34;https://github.com/sebest-blog/using-travis-ci-to-build-docker-images&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
 
 &lt;h2 id=&#34;alternative-solution-using-rocker:64b13e5a1eef6b4d76cee8a3aa68e952&#34;&gt;Alternative solution using Rocker&lt;/h2&gt;
 

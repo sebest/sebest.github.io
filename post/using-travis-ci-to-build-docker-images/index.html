@@ -74,7 +74,9 @@
 
 <p>In this post, I will show you how to use this feature to build Docker images and store them on a Docker registry.</p>
 
-<p>I&rsquo;ll discuss to methods -  one using only Docker commands and the other using Rocker which I recently discussed about <a href="/post/using-rocker-to-build-minimal-python-docker-images/">here</a>.</p>
+<p>I&rsquo;ll discuss 2 methods, one using only Docker commands and another using Rocker which I recently discussed about <a href="/post/using-rocker-to-build-minimal-python-docker-images/">here</a>.</p>
+
+<p>The complete source code is available <a href="https://github.com/sebest-blog/using-travis-ci-to-build-docker-images">here</a>.</p>
 
 <h2 id="storing-your-docker-registry-credentials-securely:64b13e5a1eef6b4d76cee8a3aa68e952">Storing your docker registry credentials securely</h2>
 
@@ -94,7 +96,7 @@
 <div class="highlight" style="background: #f0f3f3"><pre style="line-height: 125%">env:
   global:
     - secure: <span style="color: #CC3300">&quot;UkF2CHX0lUZ...VI/LE=&quot;</span> <span style="color: #0099FF; font-style: italic"># DOCKER_EMAIL</span>
-    - secure: <span style="color: #CC3300">&quot;Z3fdBNPt5hR...VI/LE=&quot;</span> <span style="color: #0099FF; font-style: italic"># DOCKER_UERNAME</span>
+    - secure: <span style="color: #CC3300">&quot;Z3fdBNPt5hR...VI/LE=&quot;</span> <span style="color: #0099FF; font-style: italic"># DOCKER_USER</span>
     - secure: <span style="color: #CC3300">&quot;F4XbD6WybHC...VI/LE=&quot;</span> <span style="color: #0099FF; font-style: italic"># DOCKER_PASS</span>
     - COMMIT=${TRAVIS_COMMIT::8}
 </pre></div>
@@ -114,13 +116,15 @@
 <p>And finally we push it on the Docker Hub registry</p>
 <div class="highlight" style="background: #f0f3f3"><pre style="line-height: 125%">after_success:
   - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
-  - export REPO=pixelle/pxladsrv
+  - export REPO=sebestblog/travis-demo
   - export TAG=`if [ &quot;$TRAVIS_BRANCH&quot; == &quot;master&quot; ]; then echo &quot;latest&quot;; else echo $TRAVIS_BRANCH ; fi`
   - docker build -f Dockerfile -t $REPO:$COMMIT .
   - docker tag $REPO:$COMMIT $REPO:$TAG
   - docker tag $REPO:$COMMIT $REPO:travis-$TRAVIS_BUILD_NUMBER
   - docker push $REPO
 </pre></div>
+
+<p>The complete source code is available <a href="https://github.com/sebest-blog/using-travis-ci-to-build-docker-images">here</a>.</p>
 
 <h2 id="alternative-solution-using-rocker:64b13e5a1eef6b4d76cee8a3aa68e952">Alternative solution using Rocker</h2>
 
