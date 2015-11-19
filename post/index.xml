@@ -199,9 +199,9 @@ COPY myapp.py /
       <guid>https://sebest.github.io/post/using-travis-ci-to-build-docker-images/</guid>
       <description>
 
-&lt;p&gt;Travis.ci recently released support to use Docker inside the CI pipeline You can read the announcement &lt;a href=&#34;http://blog.travis-ci.com/2015-08-19-using-docker-on-travis-ci/&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Travis.ci recently released support to use Docker inside the CI pipeline and you can read the announcement &lt;a href=&#34;http://blog.travis-ci.com/2015-08-19-using-docker-on-travis-ci/&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
 
-&lt;p&gt;In this post, I will show you how to use this feature to build Docker images and store them on a Docker registry.&lt;/p&gt;
+&lt;p&gt;In this post, I will show you how to use this feature to build Docker images and store them on a Docker registry using Travis.ci.&lt;/p&gt;
 
 &lt;p&gt;I&amp;rsquo;ll discuss 2 methods, one using only Docker commands and another using Rocker which I recently discussed about &lt;a href=&#34;https://sebest.github.io/post/using-rocker-to-build-minimal-python-docker-images/&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
 
