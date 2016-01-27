@@ -213,7 +213,7 @@ COPY myapp.py /
 
 &lt;p&gt;You can read more about this on Travis.ci website &lt;a href=&#34;http://docs.travis-ci.com/user/environment-variables/#Encrypting-Variables-Using-a-Public-Key&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34; style=&#34;background: #f0f3f3&#34;&gt;&lt;pre style=&#34;line-height: 125%&#34;&gt;&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; travis encrypt &lt;span style=&#34;color: #003333&#34;&gt;DOCKER_EMAIL&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;email@gmail.com
-&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; travis encrypt &lt;span style=&#34;color: #003333&#34;&gt;DOCKER_USERNAME&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;username
+&lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; travis encrypt &lt;span style=&#34;color: #003333&#34;&gt;DOCKER_USER&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;username
 &lt;span style=&#34;color: #000099; font-weight: bold&#34;&gt;$&lt;/span&gt; travis encrypt &lt;span style=&#34;color: #003333&#34;&gt;DOCKER_PASS&lt;/span&gt;&lt;span style=&#34;color: #555555&#34;&gt;=&lt;/span&gt;password
 &lt;/pre&gt;&lt;/div&gt;
 
